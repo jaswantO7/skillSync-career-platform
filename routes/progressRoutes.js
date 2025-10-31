@@ -7,59 +7,75 @@ const Project = require('../models/Project');
 
 const router = express.Router();
 
-// Get user progress
-router.get('/:userId?', authMiddleware, async (req, res) => {
+// Get progress analytics
+router.get('/analytics/:timeframe?', authMiddleware, async (req, res) => {
   try {
-    const userId = req.params.userId || req.user._id;
-    
-    // Ensure user can only access their own progress (unless admin)
-    if (userId !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied'
-      });
-    }
+    const timeframe = req.params.timeframe || '30'; // days
+    const daysBack = parseInt(timeframe);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysBack);
 
-    const progress = await Progress.findOne({ userId }).populate('roadmapId');
+    const progress = await Progress.findOne({ userId: req.user._id });
     
     if (!progress) {
-      // Create initial progress record if it doesn't exist
-      const newProgress = new Progress({
-        userId: req.user._id
-      });
-      await newProgress.save();
-      
       return res.json({
         success: true,
-        data: newProgress
+        data: {
+          activities: [],
+          stats: {
+            totalActivities: 0,
+            pointsEarned: 0,
+            hoursSpent: 0,
+            streakDays: 0
+          }
+        }
       });
     }
 
-    // Get additional context
-    const [activeRoadmap, activeProjects] = await Promise.all([
-      Roadmap.findOne({ userId, status: 'active' }),
-      Project.find({ userId, status: { $in: ['in_progress', 'planned'] } }).limit(5)
-    ]);
+    // Filter recent activities
+    const recentActivities = progress.recentActivity.filter(
+      activity => activity.timestamp >= startDate
+    );
+
+    // Calculate stats
+    const stats = {
+      totalActivities: recentActivities.length,
+      pointsEarned: recentActivities.reduce((sum, activity) => 
+        sum + (activity.metadata?.pointsEarned || 0), 0),
+      hoursSpent: recentActivities.reduce((sum, activity) => 
+        sum + (activity.metadata?.hoursSpent || 0), 0),
+      streakDays: progress.streak.current,
+      level: progress.level,
+      totalPoints: progress.totalPoints
+    };
+
+    // Group activities by day
+    const dailyActivity = {};
+    recentActivities.forEach(activity => {
+      const day = activity.timestamp.toISOString().split('T')[0];
+      if (!dailyActivity[day]) {
+        dailyActivity[day] = { count: 0, points: 0, hours: 0 };
+      }
+      dailyActivity[day].count++;
+      dailyActivity[day].points += activity.metadata?.pointsEarned || 0;
+      dailyActivity[day].hours += activity.metadata?.hoursSpent || 0;
+    });
 
     res.json({
       success: true,
       data: {
-        progress,
-        activeRoadmap,
-        activeProjects,
-        summary: {
-          totalPoints: progress.totalPoints,
-          level: progress.level,
-          streak: progress.streak,
-          weeklyProgress: progress.weeklyGoals
-        }
+        activities: recentActivities,
+        stats,
+        dailyActivity,
+        weeklyGoals: progress.weeklyGoals,
+        achievements: progress.achievements.slice(-10) // Last 10 achievements
       }
     });
   } catch (error) {
-    console.error('Get progress error:', error);
+    console.error('Get analytics error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch progress'
+      message: 'Failed to fetch progress analytics'
     });
   }
 });
@@ -218,79 +234,6 @@ router.post('/complete-deliverable', authMiddleware, async (req, res) => {
   }
 });
 
-// Get progress analytics
-router.get('/analytics/:timeframe?', authMiddleware, async (req, res) => {
-  try {
-    const timeframe = req.params.timeframe || '30'; // days
-    const daysBack = parseInt(timeframe);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - daysBack);
-
-    const progress = await Progress.findOne({ userId: req.user._id });
-    
-    if (!progress) {
-      return res.json({
-        success: true,
-        data: {
-          activities: [],
-          stats: {
-            totalActivities: 0,
-            pointsEarned: 0,
-            hoursSpent: 0,
-            streakDays: 0
-          }
-        }
-      });
-    }
-
-    // Filter recent activities
-    const recentActivities = progress.recentActivity.filter(
-      activity => activity.timestamp >= startDate
-    );
-
-    // Calculate stats
-    const stats = {
-      totalActivities: recentActivities.length,
-      pointsEarned: recentActivities.reduce((sum, activity) => 
-        sum + (activity.metadata?.pointsEarned || 0), 0),
-      hoursSpent: recentActivities.reduce((sum, activity) => 
-        sum + (activity.metadata?.hoursSpent || 0), 0),
-      streakDays: progress.streak.current,
-      level: progress.level,
-      totalPoints: progress.totalPoints
-    };
-
-    // Group activities by day
-    const dailyActivity = {};
-    recentActivities.forEach(activity => {
-      const day = activity.timestamp.toISOString().split('T')[0];
-      if (!dailyActivity[day]) {
-        dailyActivity[day] = { count: 0, points: 0, hours: 0 };
-      }
-      dailyActivity[day].count++;
-      dailyActivity[day].points += activity.metadata?.pointsEarned || 0;
-      dailyActivity[day].hours += activity.metadata?.hoursSpent || 0;
-    });
-
-    res.json({
-      success: true,
-      data: {
-        activities: recentActivities,
-        stats,
-        dailyActivity,
-        weeklyGoals: progress.weeklyGoals,
-        achievements: progress.achievements.slice(-10) // Last 10 achievements
-      }
-    });
-  } catch (error) {
-    console.error('Get analytics error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch progress analytics'
-    });
-  }
-});
-
 // Update weekly goals
 router.post('/weekly-goals', authMiddleware, async (req, res) => {
   try {
@@ -328,5 +271,63 @@ router.post('/weekly-goals', authMiddleware, async (req, res) => {
     });
   }
 });
+
+// Get user progress
+router.get('/:userId?', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.params.userId || req.user._id;
+    
+    // Ensure user can only access their own progress (unless admin)
+    if (userId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    const progress = await Progress.findOne({ userId }).populate('roadmapId');
+    
+    if (!progress) {
+      // Create initial progress record if it doesn't exist
+      const newProgress = new Progress({
+        userId: req.user._id
+      });
+      await newProgress.save();
+      
+      return res.json({
+        success: true,
+        data: newProgress
+      });
+    }
+
+    // Get additional context
+    const [activeRoadmap, activeProjects] = await Promise.all([
+      Roadmap.findOne({ userId, status: 'active' }),
+      Project.find({ userId, status: { $in: ['in_progress', 'planned'] } }).limit(5)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        progress,
+        activeRoadmap,
+        activeProjects,
+        summary: {
+          totalPoints: progress.totalPoints,
+          level: progress.level,
+          streak: progress.streak,
+          weeklyProgress: progress.weeklyGoals
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get progress error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch progress'
+    });
+  }
+});
+
 
 module.exports = router;

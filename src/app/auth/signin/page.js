@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -18,8 +18,14 @@ const SignInPage = () => {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState({})
-  const { signIn, signInWithGoogle, authLoading } = useAuth()
+  const { signIn, signInWithGoogle, authLoading, user } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+  if (!authLoading && user) {
+    router.push("/dashboard")
+  }
+}, [authLoading, user])
 
   const validateForm = () => {
     const newErrors = {}
@@ -47,7 +53,6 @@ const SignInPage = () => {
 
     try {
       await signIn(formData.email, formData.password)
-      router.push('/dashboard')
     } catch (error) {
       console.error('Sign in error:', error)
     }
@@ -56,7 +61,6 @@ const SignInPage = () => {
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle()
-      router.push('/dashboard')
     } catch (error) {
       console.error('Google sign in error:', error)
     }

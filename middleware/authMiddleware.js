@@ -32,15 +32,22 @@ const authMiddleware = async (req, res, next) => {
     let user = await User.findOne({ firebaseUid: decodedToken.uid });
     
     if (!user) {
-      // Create new user if doesn't exist
-      user = new User({
-        firebaseUid: decodedToken.uid,
-        email: decodedToken.email,
-        name: decodedToken.name || decodedToken.email.split('@')[0],
-      });
-      await user.save();
+      try {
+        user = new User({
+          firebaseUid: decodedToken.uid,
+          email: decodedToken.email,
+          name: decodedToken.name || decodedToken.email?.split("@")[0],
+        });
+
+        await user.save();
+      } catch (err) {
+        if (err.code === 11000) {
+          user = await User.findOne({ firebaseUid: decodedToken.uid });
+        } else {
+          throw err;
+        }
+      }
     } else {
-      // Update last active
       await user.updateLastActive();
     }
 

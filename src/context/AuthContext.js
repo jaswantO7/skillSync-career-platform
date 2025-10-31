@@ -14,6 +14,7 @@ import {
 import { auth } from '@/lib/firebase'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
+import Cookies from 'js-cookie'          // ✅ NEW
 
 const AuthContext = createContext({})
 
@@ -35,14 +36,23 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          setUser(firebaseUser)
-          // Fetch user profile from backend
           const token = await firebaseUser.getIdToken()
-          const response = await api.get('/user/me', {
-            headers: { Authorization: `Bearer ${token}` }
+
+          // ✅ Always sync token cookie during state updates
+          Cookies.set("auth-token", token, {
+            expires: 7,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            path: "/"
           })
+
+          const response = await api.get("/user/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          setUser(firebaseUser)
           setUserProfile(response.data.data.user)
         } else {
+          Cookies.remove("auth-token")  // ✅ remove cookie on no user
           setUser(null)
           setUserProfile(null)
         }
@@ -62,6 +72,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password)
       await updateProfile(result.user, { displayName: name })
+
+      // ✅ Set token cookie after signup
+      const token = await result.user.getIdToken()
+      Cookies.set("auth-token", token, {
+        expires: 7,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/"
+      })
+
       toast.success('Account created successfully!')
       return result
     } catch (error) {
@@ -77,6 +97,16 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(true)
     try {
       const result = await signInWithEmailAndPassword(auth, email, password)
+
+      // ✅ Store Firebase token in cookie for middleware
+      const token = await result.user.getIdToken()
+      Cookies.set("auth-token", token, {
+        expires: 7,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/"
+      })
+
       toast.success('Welcome back!')
       return result
     } catch (error) {
@@ -93,6 +123,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const provider = new GoogleAuthProvider()
       const result = await signInWithPopup(auth, provider)
+
+      // ✅ Set token cookie after OAuth login
+      const token = await result.user.getIdToken()
+      Cookies.set("auth-token", token, {
+        expires: 7,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/"
+      })
+
       toast.success('Welcome to SkillSync!')
       return result
     } catch (error) {
@@ -107,6 +147,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await signOut(auth)
+      Cookies.remove("auth-token")   // ✅ Clear cookie at logout
       toast.success('Signed out successfully')
     } catch (error) {
       console.error('Sign out error:', error)
@@ -162,23 +203,21 @@ export const AuthProvider = ({ children }) => {
     return await user.getIdToken()
   }
 
-  const value = {
-    user,
-    userProfile,
-    loading,
-    authLoading,
-    signUp,
-    signIn,
-    signInWithGoogle,
-    logout,
-    resetPassword,
-    updateUserProfile,
-    completeOnboarding,
-    getAuthToken,
-  }
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      userProfile,
+      loading,
+      authLoading,
+      signUp,
+      signIn,
+      signInWithGoogle,
+      logout,
+      resetPassword,
+      updateUserProfile,
+      completeOnboarding,
+      getAuthToken,
+    }}>
       {children}
     </AuthContext.Provider>
   )
