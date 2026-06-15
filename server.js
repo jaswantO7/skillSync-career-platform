@@ -11,6 +11,7 @@ require('dotenv').config();
 const userRoutes = require('./routes/userRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const progressRoutes = require('./routes/progressRoutes');
+const projectRoutes = require('./routes/projectRoutes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -32,10 +33,14 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',')
+  : (process.env.NODE_ENV === 'production'
     ? ['https://skillsync.app', 'https://www.skillsync.app']
-    : ['http://localhost:3000', 'http://localhost:3001'],
+    : ['http://localhost:3000', 'http://localhost:3001'])
+
+app.use(cors({
+  origin: allowedOrigins,
   credentials: true
 }));
 
@@ -57,11 +62,18 @@ mongoose.connect(process.env.MONGODB_URI, {
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get(['/health', '/api/health'], (req, res) => {
+  const hasOpenAI = !!process.env.OPENAI_API_KEY
+  const hasGrok = !!process.env.GROK_API_KEY
+  let aiMode = 'none'
+  if (hasGrok) aiMode = 'grok'
+  else if (hasOpenAI) aiMode = 'openai'
+
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    aiMode
   });
 });
 
@@ -69,6 +81,7 @@ app.get('/health', (req, res) => {
 app.use('/api/user', userRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/progress', progressRoutes);
+app.use('/api/projects', projectRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

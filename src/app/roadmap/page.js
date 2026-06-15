@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Calendar, 
@@ -12,7 +12,14 @@ import {
   ExternalLink,
   Target,
   TrendingUp,
-  Award
+  Award,
+  FileText,
+  Video,
+  GraduationCap,
+  Users,
+  Flame,
+  DollarSign,
+  Sparkles
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
@@ -22,28 +29,38 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Progress from '@/components/ui/Progress'
 import Badge from '@/components/ui/Badge'
+import { aiAPI, progressAPI } from '@/lib/api'
 import toast from 'react-hot-toast'
 
 const RoadmapPage = () => {
   const [roadmap, setRoadmap] = useState(null)
   const [loading, setLoading] = useState(true)
   const [completingResource, setCompletingResource] = useState(null)
-  const { user, getAuthToken } = useAuth()
-  const { completeResource, addActivity } = useProgress()
+  const { user, userProfile, getAuthToken, loading: authLoading } = useAuth()
+  const { completeResource, addActivity, progress, roadmap: contextRoadmap, fetchUserProgress, loading: progressLoading } = useProgress()
+  const fetchedRef = useRef(false)
 
   useEffect(() => {
+    if (authLoading || !user || fetchedRef.current || progressLoading) return
+    fetchedRef.current = true
     fetchRoadmap()
-  }, [])
+  }, [user, authLoading, progressLoading])
 
   const fetchRoadmap = async () => {
     try {
       setLoading(true)
-      
-      // Mock roadmap data - replace with actual API call
-      const mockRoadmap = {
+
+      // Read selected career path — DB first, then sessionStorage as fallback
+      const storedPath = typeof window !== 'undefined' ? sessionStorage.getItem('selectedPath') : null
+      const sessionPath = storedPath ? JSON.parse(storedPath) : null
+      const selectedPath = userProfile?.selectedCareerPath || sessionPath || null
+      const targetRole = selectedPath?.targetRole || 'Senior Software Engineer'
+      const requiredSkills = selectedPath?.requiredSkills || ['JavaScript', 'React', 'System Design', 'Leadership']
+
+      const buildMockRoadmap = () => ({
         _id: '1',
-        title: 'Path to Senior Software Engineer',
-        targetRole: 'Senior Software Engineer',
+        title: `Path to ${targetRole}`,
+        targetRole,
         duration: {
           months: 6,
           hoursPerWeek: 10,
@@ -53,14 +70,14 @@ const RoadmapPage = () => {
         monthlyPlans: [
           {
             month: 1,
-            title: 'Advanced JavaScript & ES6+',
-            focus: 'Master modern JavaScript features and advanced concepts',
-            skills: ['ES6+ Features', 'Async/Await', 'Promises', 'Modules'],
+            title: `Foundation: ${requiredSkills[0] || targetRole} Basics`,
+            focus: `Master the fundamentals of ${requiredSkills[0] || targetRole}`,
+            skills: [requiredSkills[0] || 'Core Skills', ...(requiredSkills.slice(1, 3) || [])],
             status: 'completed',
             progress: 100,
             resources: [
               {
-                title: 'JavaScript: The Advanced Parts',
+                title: `Advanced ${requiredSkills[0] || 'Core'} Course`,
                 type: 'course',
                 url: 'https://frontendmasters.com',
                 provider: 'Frontend Masters',
@@ -69,28 +86,28 @@ const RoadmapPage = () => {
                 completed: true
               },
               {
-                title: 'You Don\'t Know JS Book Series',
+                title: `${requiredSkills[0] || 'Core'} Best Practices`,
                 type: 'book',
-                url: 'https://github.com/getify/You-Dont-Know-JS',
-                provider: 'GitHub',
+                url: 'https://www.oreilly.com',
+                provider: 'O\'Reilly',
                 duration: '20 hours',
                 difficulty: 'intermediate',
                 completed: true
               }
             ],
-            milestones: ['Complete advanced JS course', 'Build async data fetching project'],
-            practiceProjects: ['Advanced Todo App with async operations']
+            milestones: [`Complete ${requiredSkills[0] || 'core'} training`, 'Build foundation project'],
+            practiceProjects: [`${targetRole} starter project`]
           },
           {
             month: 2,
-            title: 'System Design Fundamentals',
-            focus: 'Learn system design principles and architectural patterns',
-            skills: ['System Architecture', 'Database Design', 'Caching', 'Load Balancing'],
+            title: `${requiredSkills[1] || 'Intermediate'} Deep Dive`,
+            focus: `Develop expertise in ${requiredSkills[1] || 'advanced concepts'}`,
+            skills: [requiredSkills[1] || 'Advanced Skills', requiredSkills[2] || 'Related Skills'],
             status: 'in_progress',
             progress: 60,
             resources: [
               {
-                title: 'System Design Interview Course',
+                title: `${requiredSkills[1] || 'Advanced'} Mastery Course`,
                 type: 'course',
                 url: 'https://www.educative.io',
                 provider: 'Educative',
@@ -99,7 +116,7 @@ const RoadmapPage = () => {
                 completed: true
               },
               {
-                title: 'Designing Data-Intensive Applications',
+                title: `Applied ${requiredSkills[1] || 'Advanced'} Design`,
                 type: 'book',
                 url: 'https://dataintensive.net',
                 provider: 'O\'Reilly',
@@ -108,19 +125,19 @@ const RoadmapPage = () => {
                 completed: false
               }
             ],
-            milestones: ['Design a scalable web application', 'Complete system design problems'],
-            practiceProjects: ['Design a chat application architecture']
+            milestones: [`Design a ${requiredSkills[1] || 'advanced'} solution`, 'Complete practice problems'],
+            practiceProjects: [`${targetRole} intermediate project`]
           },
           {
             month: 3,
-            title: 'Leadership & Code Review',
-            focus: 'Develop leadership skills and code review expertise',
-            skills: ['Code Review', 'Mentoring', 'Technical Leadership', 'Communication'],
+            title: `${requiredSkills[2] || 'Specialized'} & Integration`,
+            focus: `Master ${requiredSkills[2] || 'specialized techniques'} and real-world application`,
+            skills: [requiredSkills[2] || 'Specialized Skills', requiredSkills[3] || 'Integration'],
             status: 'planned',
             progress: 0,
             resources: [
               {
-                title: 'The Manager\'s Path',
+                title: `${requiredSkills[2] || 'Specialized'} Best Practices`,
                 type: 'book',
                 url: 'https://www.oreilly.com',
                 provider: 'O\'Reilly',
@@ -129,7 +146,7 @@ const RoadmapPage = () => {
                 completed: false
               },
               {
-                title: 'Effective Code Reviews',
+                title: `Advanced ${requiredSkills[2] || 'Specialized'} Course`,
                 type: 'course',
                 url: 'https://pluralsight.com',
                 provider: 'Pluralsight',
@@ -138,20 +155,48 @@ const RoadmapPage = () => {
                 completed: false
               }
             ],
-            milestones: ['Lead code review sessions', 'Mentor a junior developer'],
-            practiceProjects: ['Create code review guidelines document']
+            milestones: [`Lead ${requiredSkills[2] || 'specialized'} initiatives`, `Build ${targetRole} portfolio`],
+            practiceProjects: [`${targetRole} capstone project`]
           }
         ],
         keyMilestones: [
-          'Master advanced JavaScript concepts',
-          'Complete system design fundamentals',
-          'Develop leadership and mentoring skills',
-          'Build portfolio of senior-level projects'
+          `Master ${requiredSkills[0] || 'core'} concepts`,
+          `Complete ${requiredSkills[1] || 'intermediate'} fundamentals`,
+          `Develop ${requiredSkills[2] || 'specialized'} expertise`,
+          `Build portfolio of ${targetRole}-level projects`
         ],
-        estimatedOutcome: 'Ready for Senior Software Engineer role with strong technical and leadership skills'
+        estimatedOutcome: `Ready for ${targetRole} role with strong technical and leadership skills`
+      })
+
+      // If roadmap already exists in DB (via progress context), show it
+      if (contextRoadmap) {
+        setRoadmap(contextRoadmap)
+        setLoading(false)
+        return
       }
-      
-      setRoadmap(mockRoadmap)
+
+      // Try AI call first (with 15s timeout)
+      try {
+        const token = await getAuthToken()
+        const response = await aiAPI.generateRoadmap({
+          targetRole,
+          requiredSkills,
+          timeframe: 6,
+          hoursPerWeek: 10,
+          currentSkills: userProfile?.skills || ['JavaScript', 'React']
+        }, { timeout: 15000 })
+        if (response.data?.success && response.data?.data?.roadmap) {
+          setRoadmap(response.data.data.roadmap)
+          fetchUserProgress() // refresh context so next visit finds saved roadmap
+          setLoading(false)
+          return
+        }
+      } catch (e) {
+        console.warn('AI roadmap unavailable, using mock data:', e.message)
+      }
+
+      // Fallback to mock
+      setRoadmap(buildMockRoadmap())
     } catch (error) {
       console.error('Failed to fetch roadmap:', error)
       toast.error('Failed to load roadmap')
@@ -178,6 +223,18 @@ const RoadmapPage = () => {
       const totalMonthProgress = updatedRoadmap.monthlyPlans.reduce((sum, m) => sum + m.progress, 0)
       updatedRoadmap.overallProgress = Math.round(totalMonthProgress / updatedRoadmap.monthlyPlans.length)
       
+      // Save to backend
+      try {
+        await progressAPI.completeResource({
+          roadmapId: roadmap._id,
+          monthIndex,
+          resourceIndex,
+          hoursSpent: 1
+        })
+      } catch (e) {
+        console.warn('Failed to persist resource completion:', e.message)
+      }
+
       setRoadmap(updatedRoadmap)
       
       // Track activity
@@ -203,29 +260,56 @@ const RoadmapPage = () => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
       case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-      case 'planned': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+      case 'planned': return 'bg-surface-100 text-surface-800 dark:bg-surface-800 dark:text-surface-200'
+      default: return 'bg-surface-100 text-surface-800 dark:bg-surface-800 dark:text-surface-200'
     }
   }
 
   const getResourceTypeIcon = (type) => {
     switch (type) {
-      case 'course': return <Play className="w-4 h-4" />
-      case 'book': return <BookOpen className="w-4 h-4" />
-      case 'tutorial': return <Play className="w-4 h-4" />
-      case 'practice': return <Target className="w-4 h-4" />
-      default: return <BookOpen className="w-4 h-4" />
+      case 'course': return <GraduationCap className="w-4 h-4 text-blue-500" />
+      case 'video': return <Video className="w-4 h-4 text-red-500" />
+      case 'article': return <FileText className="w-4 h-4 text-green-500" />
+      case 'book': return <BookOpen className="w-4 h-4 text-amber-600" />
+      case 'tutorial': return <Play className="w-4 h-4 text-purple-500" />
+      case 'practice': return <Target className="w-4 h-4 text-orange-500" />
+      case 'project': return <Calendar className="w-4 h-4 text-cyan-500" />
+      case 'certification': return <Award className="w-4 h-4 text-yellow-500" />
+      case 'workshop': return <Users className="w-4 h-4 text-indigo-500" />
+      case 'bootcamp': return <Flame className="w-4 h-4 text-red-600" />
+      case 'documentation': return <FileText className="w-4 h-4 text-surface-500" />
+      case 'guide': return <BookOpen className="w-4 h-4 text-teal-500" />
+      default: return <BookOpen className="w-4 h-4 text-surface-400" />
     }
+  }
+
+  const getCostBadge = (resource) => {
+    if (resource.cost?.amount) {
+      return (
+        <Badge variant="secondary" size="xs" className="flex items-center gap-0.5">
+          <DollarSign size={10} />
+          {resource.cost.amount}
+        </Badge>
+      )
+    }
+    if (resource.cost?.amount === 0 || resource.free) {
+      return (
+        <Badge variant="outline" size="xs" className="text-green-600 border-green-300">
+          <Sparkles size={10} className="mr-0.5" />Free
+        </Badge>
+      )
+    }
+    return null
   }
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="spinner w-8 h-8 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading your roadmap...</p>
+            <p className="text-surface-600 dark:text-surface-400">Loading your roadmap...</p>
           </div>
         </div>
       </div>
@@ -234,17 +318,17 @@ const RoadmapPage = () => {
 
   if (!roadmap) {
     return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <DashboardHeader />
           <main className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <Target className="w-16 h-16 text-surface-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-surface-900 dark:text-white mb-2">
                 No Roadmap Yet
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-surface-600 dark:text-surface-400 mb-6">
                 Generate a personalized learning roadmap to start your career growth journey.
               </p>
               <Button onClick={() => window.location.href = '/career-path'}>
@@ -258,7 +342,7 @@ const RoadmapPage = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -273,11 +357,11 @@ const RoadmapPage = () => {
               transition={{ duration: 0.6 }}
               className="mb-8"
             >
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {roadmap.title}
+              <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+                {roadmap.title || `Path to ${roadmap.targetRole}`}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Your personalized {roadmap.duration.months}-month learning journey to {roadmap.targetRole}
+              <p className="text-surface-600 dark:text-surface-400">
+                Your personalized {roadmap.duration?.months || 6}-month learning journey to {roadmap.targetRole}
               </p>
             </motion.div>
 
@@ -295,32 +379,32 @@ const RoadmapPage = () => {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-primary-600 mb-1">
-                        {roadmap.overallProgress}%
+                      <div className="text-3xl font-bold text-emerald-600 mb-1">
+                        {roadmap.overallProgress ?? 0}%
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Complete</p>
+                      <p className="text-sm text-surface-600 dark:text-surface-400">Complete</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                        {roadmap.duration.months}
+                      <div className="text-3xl font-bold text-surface-900 dark:text-white mb-1">
+                        {roadmap.duration?.months ?? 6}
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Months</p>
+                      <p className="text-sm text-surface-600 dark:text-surface-400">Months</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                        {roadmap.duration.hoursPerWeek}
+                      <div className="text-3xl font-bold text-surface-900 dark:text-white mb-1">
+                        {roadmap.duration?.hoursPerWeek ?? 10}
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Hours/Week</p>
+                      <p className="text-sm text-surface-600 dark:text-surface-400">Hours/Week</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                        {roadmap.duration.totalHours}
+                      <div className="text-3xl font-bold text-surface-900 dark:text-white mb-1">
+                        {roadmap.duration?.totalHours ?? 240}
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Total Hours</p>
+                      <p className="text-sm text-surface-600 dark:text-surface-400">Total Hours</p>
                     </div>
                   </div>
                   <div className="mt-6">
-                    <Progress value={roadmap.overallProgress} className="h-3" />
+                    <Progress value={roadmap.overallProgress ?? 0} className="h-3" />
                   </div>
                 </CardContent>
               </Card>
@@ -328,7 +412,7 @@ const RoadmapPage = () => {
 
             {/* Monthly Plans */}
             <div className="space-y-6">
-              {roadmap.monthlyPlans.map((month, index) => (
+              {(roadmap.monthlyPlans || []).map((month, index) => (
                 <motion.div
                   key={month.month}
                   initial={{ opacity: 0, y: 20 }}
@@ -339,14 +423,14 @@ const RoadmapPage = () => {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
-                            <span className="text-primary-600 dark:text-primary-400 font-bold">
-                              {month.month}
+                          <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                              {month.month ?? index + 1}
                             </span>
                           </div>
                           <div>
                             <CardTitle className="text-xl">{month.title}</CardTitle>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                            <p className="text-surface-600 dark:text-surface-400 text-sm mt-1">
                               {month.focus}
                             </p>
                           </div>
@@ -356,10 +440,10 @@ const RoadmapPage = () => {
                             {month.status.replace('_', ' ')}
                           </Badge>
                           <div className="text-right">
-                            <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {month.progress}%
+                            <div className="text-lg font-semibold text-surface-900 dark:text-white">
+                              {month.progress ?? 0}%
                             </div>
-                            <div className="text-xs text-gray-500">Complete</div>
+                            <div className="text-xs text-surface-500">Complete</div>
                           </div>
                         </div>
                       </div>
@@ -369,25 +453,25 @@ const RoadmapPage = () => {
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Resources */}
                         <div className="lg:col-span-2">
-                          <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                            <BookOpen className="w-5 h-5 mr-2 text-primary-600" />
+                          <h4 className="font-semibold text-surface-900 dark:text-white mb-4 flex items-center">
+                            <BookOpen className="w-5 h-5 mr-2 text-emerald-600" />
                             Learning Resources
                           </h4>
                           <div className="space-y-3">
-                            {month.resources.map((resource, resourceIndex) => (
+                            {(month.resources || []).map((resource, resourceIndex) => (
                               <div
                                 key={resourceIndex}
                                 className={`p-4 rounded-lg border transition-all duration-200 ${
                                   resource.completed
                                     ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:shadow-md'
+                                    : 'glass-card border-surface-200 dark:border-surface-700/50 hover:shadow-md'
                                 }`}
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-2 mb-2">
                                       {getResourceTypeIcon(resource.type)}
-                                      <h5 className="font-medium text-gray-900 dark:text-white">
+                                      <h5 className="font-medium text-surface-900 dark:text-white">
                                         {resource.title}
                                       </h5>
                                       {resource.url && (
@@ -395,13 +479,13 @@ const RoadmapPage = () => {
                                           href={resource.url}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="text-primary-600 hover:text-primary-700"
+                                          className="text-emerald-600 hover:text-emerald-700"
                                         >
                                           <ExternalLink size={16} />
                                         </a>
                                       )}
                                     </div>
-                                    <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                                    <div className="flex items-center space-x-4 text-sm text-surface-600 dark:text-surface-400">
                                       <span>{resource.provider}</span>
                                       <span>•</span>
                                       <span>{resource.duration}</span>
@@ -409,6 +493,7 @@ const RoadmapPage = () => {
                                       <Badge variant="outline" size="xs">
                                         {resource.difficulty}
                                       </Badge>
+                                      {getCostBadge(resource)}
                                     </div>
                                   </div>
                                   <div className="ml-4">
@@ -434,12 +519,12 @@ const RoadmapPage = () => {
                         {/* Skills & Milestones */}
                         <div>
                           <div className="mb-6">
-                            <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                              <TrendingUp className="w-5 h-5 mr-2 text-primary-600" />
+                            <h4 className="font-semibold text-surface-900 dark:text-white mb-3 flex items-center">
+                              <TrendingUp className="w-5 h-5 mr-2 text-emerald-600" />
                               Skills Focus
                             </h4>
                             <div className="flex flex-wrap gap-2">
-                              {month.skills.map((skill, skillIndex) => (
+                              {(month.skills || []).map((skill, skillIndex) => (
                                 <Badge key={skillIndex} variant="outline" size="sm">
                                   {skill}
                                 </Badge>
@@ -448,15 +533,15 @@ const RoadmapPage = () => {
                           </div>
 
                           <div>
-                            <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                              <Award className="w-5 h-5 mr-2 text-primary-600" />
+                            <h4 className="font-semibold text-surface-900 dark:text-white mb-3 flex items-center">
+                              <Award className="w-5 h-5 mr-2 text-emerald-600" />
                               Milestones
                             </h4>
                             <div className="space-y-2">
-                              {month.milestones.map((milestone, milestoneIndex) => (
+                              {(month.milestones || []).map((milestone, milestoneIndex) => (
                                 <div key={milestoneIndex} className="flex items-start space-x-2">
-                                  <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>
+                                  <p className="text-sm text-surface-600 dark:text-surface-400">
                                     {milestone}
                                   </p>
                                 </div>
@@ -469,14 +554,14 @@ const RoadmapPage = () => {
                       {/* Progress Bar */}
                       <div className="mt-6">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <span className="text-sm font-medium text-surface-700 dark:text-surface-300">
                             Month {month.month} Progress
                           </span>
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
-                            {month.progress}%
+                          <span className="text-sm text-surface-500 dark:text-surface-400">
+                            {month.progress ?? 0}%
                           </span>
                         </div>
-                        <Progress value={month.progress} />
+                        <Progress value={month.progress ?? 0} />
                       </div>
                     </CardContent>
                   </Card>
@@ -494,28 +579,28 @@ const RoadmapPage = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <Award className="w-6 h-6 mr-2 text-primary-600" />
+                    <Award className="w-6 h-6 mr-2 text-emerald-600" />
                     Key Milestones
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {roadmap.keyMilestones.map((milestone, index) => (
-                      <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
-                          <span className="text-primary-600 dark:text-primary-400 text-sm font-medium">
+                    {(roadmap.keyMilestones || []).map((milestone, index) => (
+                      <div key={index} className="flex items-center space-x-3 p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
+                        <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                          <span className="text-emerald-600 dark:text-emerald-400 text-sm font-medium">
                             {index + 1}
                           </span>
                         </div>
-                        <p className="text-gray-700 dark:text-gray-300">
+                        <p className="text-surface-700 dark:text-surface-300">
                           {milestone}
                         </p>
                       </div>
                     ))}
                   </div>
                   
-                  <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-                    <p className="text-primary-800 dark:text-primary-200">
+                  <div className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                    <p className="text-emerald-800 dark:text-emerald-200">
                       <strong>Expected Outcome:</strong> {roadmap.estimatedOutcome}
                     </p>
                   </div>

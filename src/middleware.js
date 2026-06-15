@@ -38,11 +38,8 @@ export function middleware(request) {
 
   // If it's a protected path and there's no token, redirect to signin
   if (isProtectedPath && !token) {
-    const loginUrl = new URL("/auth/signin", request.url);
-    loginUrl.searchParams.set("redirect", pathname); // Go back after login
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL('/auth/signin', request.url))
   }
-
   // If user is authenticated and trying to access auth pages, redirect to dashboard
   if (token && (path === '/auth/signin' || path === '/auth/signup')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))

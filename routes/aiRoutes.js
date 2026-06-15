@@ -13,9 +13,13 @@ const {
 } = require("../services/aiService");
 const User = require("../models/User");
 const SkillGraph = require("../models/SkillGraph");
+const ResumeAnalysis = require("../models/ResumeAnalysis");
 const CareerPath = require("../models/CareerPath");
 const Roadmap = require("../models/Roadmap");
 const Project = require("../models/Project");
+const Usage = require("../models/Usage");
+const Chat = require("../models/Chat");
+const { checkFeatureAccess } = require("../middleware/planEnforcer");
 
 const router = express.Router();
 
@@ -73,6 +77,11 @@ const validateRecommendPath = [
     .isString()
     .trim()
     .withMessage("Current role must be a string"),
+  body("targetRole")
+    .optional()
+    .isString()
+    .trim()
+    .withMessage("Target role must be a string"),
 ];
 
 const validateGenerateRoadmap = [
@@ -139,7 +148,18 @@ router.post(
   "/parseResume",
   aiRateLimit,
   authMiddleware,
-  upload.single("resume"),
+  (req, res, next) => {
+    upload.single("resume")(req, res, (err) => {
+      if (err) {
+        console.error("Multer error:", err.message);
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+        });
+      }
+      next();
+    });
+  },
   async (req, res) => {
     try {
       if (!req.file) {
@@ -155,7 +175,14 @@ router.post(
         req.file.originalname
       );
 
-      // Save or update skill graph
+      // Save as a new analysis record (keeps history intact)
+      const analysis = await ResumeAnalysis.create({
+        userId: req.user._id,
+        fileName: req.file.originalname,
+        extracted: extractedData,
+      });
+
+      // Merge into current skill graph as well
       let skillGraph = await SkillGraph.findOne({ userId: req.user._id });
 
       if (!skillGraph) {
@@ -164,7 +191,7 @@ router.post(
           skills: extractedData.skills.map((skill) => ({
             name: skill,
             category: categorizeSkill(skill),
-            proficiency: Math.floor(Math.random() * 3) + 3, // Random 3-5 for demo
+            proficiency: extractedData.skillProficiencies?.[skill] || 3,
             verified: false,
             source: "resume",
           })),
@@ -174,7 +201,6 @@ router.post(
           tools: extractedData.tools,
         });
       } else {
-        // Update existing skill graph
         const newSkills = extractedData.skills.filter(
           (skill) =>
             !skillGraph.skills.some(
@@ -186,7 +212,7 @@ router.post(
           skillGraph.skills.push({
             name: skill,
             category: categorizeSkill(skill),
-            proficiency: Math.floor(Math.random() * 3) + 3,
+            proficiency: extractedData.skillProficiencies?.[skill] || 3,
             verified: false,
             source: "resume",
           });
@@ -212,6 +238,7 @@ router.post(
         data: {
           extracted: extractedData,
           skillGraphId: skillGraph._id,
+          analysisId: analysis._id,
         },
       });
     } catch (error) {
@@ -249,43 +276,35 @@ router.post(
         goals,
         experienceYears = 0,
         currentRole,
+        targetRole,
       } = req.body;
 
       // Get career path recommendations from AI
-      const recommendations = await recommendCareerPaths(
+      const result = await recommendCareerPaths(
         currentSkills,
         goals,
         experienceYears,
-        currentRole
+        currentRole,
+        targetRole
       );
 
-      // Save career paths to database
-      const careerPaths = [];
-      for (const rec of recommendations.recommendations) {
-        const careerPath = new CareerPath({
-          userId: req.user._id,
-          currentRole: currentRole || "Professional",
-          targetRole: rec.nextRole,
-          requiredSkills: rec.requiredSkills,
-          timeToAchieve: rec.timeToAchieve,
-          difficulty: rec.difficulty,
-          reasoning: rec.reasoning,
-          salaryRange: rec.salaryRange,
-          marketDemand: rec.marketDemand,
-          keySteps: rec.keySteps || [],
-          status: "suggested",
-        });
+      // Attach temp IDs for React keys & normalize field names
+      const recommendations = (result.recommendations || []).map((rec, i) => ({
+        ...rec,
+        _id: `rec-${Date.now()}-${i}`,
+        targetRole: rec.nextRole || rec.targetRole || '',
+        currentRole: currentRole || '',
+      }));
 
-        await careerPath.save();
-        careerPaths.push(careerPath);
-      }
+      // Track usage
+      await Usage.increment(req.user._id, 'careerPathsGenerated')
 
       res.json({
         success: true,
         message: "Career paths recommended successfully",
         data: {
-          recommendations: careerPaths,
-          totalPaths: careerPaths.length,
+          recommendations,
+          totalPaths: recommendations.length,
         },
       });
     } catch (error) {
@@ -335,16 +354,45 @@ router.post(
           title: plan.title,
           focus: plan.focus,
           skills: plan.skills,
-          resources: plan.resources.map((resource) => ({
+          resources: plan.resources.map((resource) => {
+            const provider = resource.provider || 'Various';
+            const title = encodeURIComponent(resource.title);
+            const providerSearchMap = {
+              'Coursera': `https://www.coursera.org/search?query=${title}`,
+              'Udemy': `https://www.udemy.com/courses/search/?q=${title}`,
+              'Pluralsight': `https://www.pluralsight.com/search?q=${title}`,
+              'Frontend Masters': `https://frontendmasters.com/search/?q=${title}`,
+              'Educative': `https://www.educative.io/search?q=${title}`,
+              'O\'Reilly': `https://www.oreilly.com/search/?q=${title}`,
+              'freeCodeCamp': `https://www.freecodecamp.org/news/search/?query=${title}`,
+              'YouTube': `https://www.youtube.com/results?search_query=${title}`,
+              'GitHub': `https://github.com/search?q=${title}`,
+              'LinkedIn': `https://www.linkedin.com/learning/search?keywords=${title}`,
+              'Scrum.org': `https://www.scrum.org/search?search=${title}`,
+              'AWS': `https://aws.amazon.com/search/?searchQuery=${title}`,
+              'Google Cloud': `https://cloud.google.com/search?q=${title}`,
+              'Microsoft': `https://learn.microsoft.com/en-us/search/?terms=${title}`,
+              'IBM': `https://www.ibm.com/training/search?q=${title}`,
+              'Datacamp': `https://www.datacamp.com/search?q=${title}`,
+              'Codecademy': `https://www.codecademy.com/search?query=${title}`,
+              'edX': `https://www.edx.org/search?q=${title}`,
+              'Docker': `https://docs.docker.com/search/?q=${title}`,
+              'Manning': `https://www.manning.com/search?q=${title}`,
+              'Amazon': `https://www.amazon.com/s?k=${title}`,
+            };
+            const searchUrl = providerSearchMap[provider] || `https://www.google.com/search?q=${encodeURIComponent(provider + ' ' + resource.title)}`;
+            return {
             title: resource.title,
-            type: resource.type,
-            url: resource.url || "#",
-            provider: resource.provider || "Various",
+            type: ['course', 'video', 'article', 'book', 'tutorial', 'practice', 'project', 'certification', 'workshop', 'bootcamp', 'documentation', 'guide'].includes(resource.type) ? resource.type : 'course',
+            url: searchUrl,
+            provider,
             duration: resource.duration,
-            difficulty: resource.difficulty,
+            difficulty: ['beginner', 'intermediate', 'advanced'].includes(resource.difficulty) ? resource.difficulty : 'intermediate',
             description: resource.description,
+            cost: resource.cost || { amount: 0, currency: 'USD' },
             completed: false,
-          })),
+          };
+          }),
           milestones: plan.milestones,
           practiceProjects: plan.practiceProjects || [],
         })),
@@ -354,6 +402,9 @@ router.post(
       });
 
       await roadmap.save();
+
+      // Track usage
+      await Usage.increment(req.user._id, 'roadmapsGenerated')
 
       res.json({
         success: true,
@@ -391,32 +442,28 @@ router.post(
         difficultyLevel
       );
 
-      // Save projects to database
-      const projects = [];
-      for (const proj of projectSuggestions.projects) {
-        const project = new Project({
-          userId: req.user._id,
-          title: proj.title,
-          description: proj.description,
-          difficulty: proj.difficulty,
-          estimatedHours: proj.estimatedHours,
-          skillsUsed: proj.skillsUsed,
-          technologies: proj.technologies,
-          deliverables: proj.deliverables.map((deliverable) => ({
-            title: deliverable.title,
-            description: deliverable.description,
-            type: deliverable.type,
-            completed: false,
-          })),
-          learningObjectives: proj.learningObjectives,
-          portfolioValue: proj.portfolioValue,
-          realWorldApplication: proj.realWorldApplication,
-          status: "suggested",
-        });
-
-        await project.save();
-        projects.push(project);
-      }
+      // Return suggestions without saving — only save when user starts a project
+      const projects = (projectSuggestions.projects || []).map((proj) => ({
+        title: proj.title,
+        description: proj.description,
+        objective: proj.objective || `Build a ${proj.title} to demonstrate ${(proj.skillsUsed || []).slice(0, 3).join(', ')} skills`,
+        difficulty: proj.difficulty || 'intermediate',
+        estimatedDuration: {
+          value: proj.estimatedDuration?.value || proj.estimatedHours || 40,
+          unit: proj.estimatedDuration?.unit || 'hours'
+        },
+        skillsUsed: proj.skillsUsed || [],
+        technologies: proj.technologies || [],
+        deliverables: (proj.deliverables || []).map((d) => ({
+          title: d.title,
+          description: d.description,
+          type: d.type,
+          completed: false,
+        })),
+        learningObjectives: proj.learningObjectives || [],
+        portfolioValue: proj.portfolioValue || '',
+        realWorldApplication: proj.realWorldApplication || '',
+      }));
 
       res.json({
         success: true,
@@ -448,6 +495,18 @@ router.post(
       const { message, context = {} } = req.body;
       const userId = req.user._id.toString();
 
+      // Check plan limits for mentor chat
+      const plan = req.user?.subscriptionPlan || 'free'
+      if (plan === 'free') {
+        const usage = await Usage.getUsage(req.user._id)
+        if (usage.mentorChats >= 5) {
+          return res.status(403).json({
+            success: false,
+            message: 'Free plan limited to 5 mentor chats per month. Upgrade to Pro for unlimited chats.',
+          })
+        }
+      }
+
       // Get user context if not provided
       if (!context.currentRole || !context.skills) {
         const [user, skillGraph, activeRoadmap] = await Promise.all([
@@ -472,6 +531,9 @@ router.post(
       // Get AI mentor response
       const chatResponse = await mentorChat(userId, message, context);
 
+      // Track usage only after successful AI response
+      await Usage.increment(req.user._id, 'mentorChats')
+
       res.json({
         success: true,
         message: "Chat response generated successfully",
@@ -479,6 +541,7 @@ router.post(
       });
     } catch (error) {
       console.error("Mentor chat error:", error);
+      // Don't increment usage on errors — user didn't get a response
       res.status(500).json({
         success: false,
         message: "Failed to generate chat response. Please try again.",
@@ -486,6 +549,20 @@ router.post(
     }
   }
 );
+
+// Get mentor chat history
+router.get("/mentorChat/history", authMiddleware, async (req, res) => {
+  try {
+    const chat = await Chat.getOrCreate(req.user._id)
+    res.json({
+      success: true,
+      data: { messages: chat.messages },
+    })
+  } catch (error) {
+    console.error("Chat history error:", error)
+    res.status(500).json({ success: false, message: "Failed to load chat history" })
+  }
+})
 
 // Get AI interaction history
 router.get("/history", authMiddleware, async (req, res) => {
@@ -536,6 +613,55 @@ router.get("/history", authMiddleware, async (req, res) => {
       success: false,
       message: "Failed to fetch AI interaction history",
     });
+  }
+});
+
+// List all resume analyses for the user
+router.get("/analyses", authMiddleware, async (req, res) => {
+  try {
+    const analyses = await ResumeAnalysis.find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .select("-__v");
+    res.json({ success: true, data: analyses });
+  } catch (error) {
+    console.error("Get analyses error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch analyses" });
+  }
+});
+
+// Update an analysis (edit extracted data)
+router.put("/analyses/:id", authMiddleware, async (req, res) => {
+  try {
+    const analysis = await ResumeAnalysis.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+    if (!analysis) {
+      return res.status(404).json({ success: false, message: "Analysis not found" });
+    }
+    analysis.extracted = { ...analysis.extracted.toObject(), ...req.body.extracted };
+    await analysis.save();
+    res.json({ success: true, data: analysis });
+  } catch (error) {
+    console.error("Update analysis error:", error);
+    res.status(500).json({ success: false, message: "Failed to update analysis" });
+  }
+});
+
+// Delete an analysis
+router.delete("/analyses/:id", authMiddleware, async (req, res) => {
+  try {
+    const analysis = await ResumeAnalysis.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+    if (!analysis) {
+      return res.status(404).json({ success: false, message: "Analysis not found" });
+    }
+    res.json({ success: true, message: "Analysis deleted" });
+  } catch (error) {
+    console.error("Delete analysis error:", error);
+    res.status(500).json({ success: false, message: "Failed to delete analysis" });
   }
 });
 

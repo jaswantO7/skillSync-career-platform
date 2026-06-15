@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ActivitySchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['skill_added', 'resource_completed', 'project_started', 'project_completed', 'milestone_reached', 'roadmap_updated'],
+    enum: ['skill_added', 'resource_completed', 'project_started', 'project_completed', 'milestone_reached', 'roadmap_updated', 'roadmap_generated'],
     required: true
   },
   description: {
@@ -174,6 +174,7 @@ ProgressSchema.index({ totalPoints: -1 });
 
 // Methods
 ProgressSchema.methods.addActivity = function(activityData) {
+  if (!this.recentActivity) this.recentActivity = [];
   this.recentActivity.unshift(activityData);
   
   // Keep only last 50 activities
@@ -191,16 +192,30 @@ ProgressSchema.methods.addActivity = function(activityData) {
     'project_started': 50,
     'project_completed': 100,
     'milestone_reached': 75,
-    'roadmap_updated': 20
+    'roadmap_updated': 20,
+    'roadmap_generated': 20
   };
   
   const points = pointsMap[activityData.type] || 5;
   this.addPoints(points);
   
-  return this.save();
+  // Include deferred level-up milestone if one was queued by addPoints
+  if (this._levelUpMilestone) {
+    this.recentActivity.unshift(this._levelUpMilestone);
+    this._levelUpMilestone = null;
+  }
+  
+  return this.save().catch(err => {
+    console.error('Progress.addActivity save error:', err);
+    throw err;
+  });
 };
 
 ProgressSchema.methods.updateStreak = function() {
+  // Ensure streak object exists (handles documents created before streak was added to schema)
+  if (!this.streak) {
+    this.streak = { current: 0, longest: 0, lastActivityDate: new Date() };
+  }
   const today = new Date();
   const lastActivity = this.streak.lastActivityDate;
   const daysDiff = Math.floor((today - lastActivity) / (1000 * 60 * 60 * 24));
@@ -227,15 +242,18 @@ ProgressSchema.methods.addPoints = function(points) {
   const newLevel = Math.floor(this.totalPoints / 1000) + 1;
   if (newLevel > this.level) {
     this.level = newLevel;
-    this.addActivity({
+    this._levelUpMilestone = {
       type: 'milestone_reached',
       description: `Reached level ${newLevel}!`,
       metadata: { pointsEarned: points }
-    });
+    };
   }
 };
 
 ProgressSchema.methods.updateWeeklyProgress = function(hoursSpent, tasksCompleted = 0) {
+  if (!this.weeklyGoals) {
+    this.weeklyGoals = { hoursTarget: 10, hoursCompleted: 0, weekStartDate: new Date(), tasksTarget: 5, tasksCompleted: 0 };
+  }
   const now = new Date();
   const weekStart = this.weeklyGoals.weekStartDate;
   const daysDiff = Math.floor((now - weekStart) / (1000 * 60 * 60 * 24));

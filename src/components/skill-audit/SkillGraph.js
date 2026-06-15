@@ -9,10 +9,18 @@ import { Brain, Code, Wrench, Building, GraduationCap, Award } from 'lucide-reac
 const SkillGraph = ({ data }) => {
   if (!data) return null
 
+  // Convert 1-5 proficiency to percentage
+  const profToPct = (skill) => {
+    const pct = {
+      5: 100, 4: 85, 3: 70, 2: 55, 1: 40
+    }
+    return pct[data.skillProficiencies?.[skill]] || 70
+  }
+
   // Prepare data for charts
   const skillsData = data.skills?.slice(0, 8).map((skill, index) => ({
     name: skill,
-    value: Math.floor(Math.random() * 40) + 60, // Mock proficiency 60-100%
+    value: profToPct(skill),
     fill: `hsl(${(index * 45) % 360}, 70%, 50%)`
   })) || []
 
@@ -82,10 +90,10 @@ const SkillGraph = ({ data }) => {
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Code className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-surface-900 dark:text-white">
                 {data.skills?.length || 0}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Skills</p>
+              <p className="text-sm text-surface-600 dark:text-surface-400">Skills</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -100,10 +108,10 @@ const SkillGraph = ({ data }) => {
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Wrench className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-surface-900 dark:text-white">
                 {data.tools?.length || 0}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Tools</p>
+              <p className="text-sm text-surface-600 dark:text-surface-400">Tools</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -118,10 +126,10 @@ const SkillGraph = ({ data }) => {
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Building className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-surface-900 dark:text-white">
                 {data.experienceYears || 0}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Years Exp</p>
+              <p className="text-sm text-surface-600 dark:text-surface-400">Years Exp</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -136,10 +144,10 @@ const SkillGraph = ({ data }) => {
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-2">
                 <GraduationCap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-surface-900 dark:text-white">
                 {data.industries?.length || 0}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Industries</p>
+              <p className="text-sm text-surface-600 dark:text-surface-400">Industries</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -168,8 +176,16 @@ const SkillGraph = ({ data }) => {
                         fill="#8884d8"
                       />
                       <Tooltip 
-                        formatter={(value, name) => [`${value}%`, 'Proficiency']}
-                        labelFormatter={(label) => `Skill: ${label}`}
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.length) return null
+                          const d = payload[0].payload
+                          return (
+                            <div className="glass-card border border-surface-200 dark:border-surface-700 rounded-lg shadow-lg p-3 text-sm">
+                              <p className="font-semibold text-surface-900 dark:text-white mb-1">{d.name}</p>
+                              <p className="text-surface-600 dark:text-surface-400">Proficiency: <span className="font-medium">{d.value}%</span></p>
+                            </div>
+                          )
+                        }}
                       />
                     </RadialBarChart>
                   </ResponsiveContainer>

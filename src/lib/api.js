@@ -7,20 +7,25 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3
 export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
-// Request interceptor
+// Auth interceptor — attach Firebase ID token (auto-refreshed by Firebase)
 api.interceptors.request.use(
-  (config) => {
-    // Add loading state if needed
+  async (config) => {
+    if (!config.headers.Authorization && typeof window !== 'undefined') {
+      try {
+        const { auth } = await import('@/lib/firebase')
+        if (auth.currentUser) {
+          const token = await auth.currentUser.getIdToken()
+          config.headers.Authorization = `Bearer ${token}`
+        }
+      } catch {
+        // Firebase not available
+      }
+    }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 // Response interceptor
@@ -33,10 +38,7 @@ api.interceptors.response.use(
     
     // Handle specific error cases
     if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/signin'
-      }
+      // Don't redirect — components handle auth errors per-context
     } else if (error.response?.status === 403) {
       toast.error('Access denied')
     } else if (error.response?.status === 429) {
@@ -55,18 +57,23 @@ export const authAPI = {
   updateProfile: (data) => api.post('/user/update', data),
   completeOnboarding: (data) => api.post('/user/complete-onboarding', data),
   getStats: () => api.get('/user/stats'),
+  deleteAccount: () => api.delete('/user/account'),
+  updatePlan: (plan) => api.post('/user/plan', { plan }),
 }
 
 export const aiAPI = {
   parseResume: (formData) => api.post('/ai/parseResume', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
     timeout: 60000, // 60 seconds for file upload
   }),
   recommendPath: (data) => api.post('/ai/recommendPath', data),
-  generateRoadmap: (data) => api.post('/ai/generateRoadmap', data),
+  generateRoadmap: (data, config) => api.post('/ai/generateRoadmap', data, config),
   suggestProjects: (data) => api.post('/ai/suggestProjects', data),
   mentorChat: (data) => api.post('/ai/mentorChat', data),
+  getChatHistory: () => api.get('/ai/mentorChat/history'),
   getHistory: () => api.get('/ai/history'),
+  getAnalyses: () => api.get('/ai/analyses'),
+  updateAnalysis: (id, data) => api.put(`/ai/analyses/${id}`, data),
+  deleteAnalysis: (id) => api.delete(`/ai/analyses/${id}`),
 }
 
 export const progressAPI = {
@@ -76,6 +83,13 @@ export const progressAPI = {
   completeDeliverable: (data) => api.post('/progress/complete-deliverable', data),
   getAnalytics: (timeframe) => api.get(`/progress/analytics/${timeframe}`),
   updateWeeklyGoals: (data) => api.post('/progress/weekly-goals', data),
+}
+
+export const projectAPI = {
+  getUserProjects: () => api.get('/projects'),
+  startProject: (data) => api.post('/projects/start', data),
+  completeDeliverable: (data) => api.post('/projects/deliverable', data),
+  removeProject: (id) => api.delete(`/projects/${id}`),
 }
 
 // Utility functions

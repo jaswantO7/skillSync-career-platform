@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Bell, User, LogOut, Settings, Sun, Moon } from 'lucide-react'
+import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import Button from '@/components/ui/Button'
@@ -45,9 +46,8 @@ const DashboardHeader = () => {
   }
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+    <header className="glass-nav px-6 py-3">
       <div className="flex items-center justify-between">
-        {/* Search */}
         <div className="flex-1 max-w-md">
           <Input
             placeholder="Search skills, projects, or resources..."
@@ -56,9 +56,7 @@ const DashboardHeader = () => {
           />
         </div>
 
-        {/* Right side actions */}
-        <div className="flex items-center space-x-4 ml-6">
-          {/* Theme Toggle */}
+        <div className="flex items-center space-x-3 ml-6">
           <Button
             variant="ghost"
             size="sm"
@@ -67,7 +65,6 @@ const DashboardHeader = () => {
             icon={theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           />
 
-          {/* Notifications */}
           <div className="relative">
             <Button
               variant="ghost"
@@ -84,44 +81,44 @@ const DashboardHeader = () => {
             <AnimatePresence>
               {showNotifications && (
                 <motion.div
-                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
+                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-50"
                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="font-medium text-gray-900 dark:text-white">Notifications</h3>
+                  <div className="px-4 py-2 border-b border-surface-200 dark:border-surface-700">
+                    <h3 className="font-medium text-surface-900 dark:text-white">Notifications</h3>
                   </div>
                   <div className="max-h-80 overflow-y-auto">
                     {notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${
-                          notification.unread ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        className={`px-4 py-3 hover:bg-surface-50 dark:hover:bg-surface-700/50 cursor-pointer ${
+                          notification.unread ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''
                         }`}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            <p className="text-sm font-medium text-surface-900 dark:text-white">
                               {notification.title}
                             </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            <p className="text-sm text-surface-500 dark:text-surface-400 mt-1">
                               {notification.message}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            <p className="text-xs text-surface-400 dark:text-surface-500 mt-1">
                               {notification.time}
                             </p>
                           </div>
                           {notification.unread && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full ml-2 mt-1"></div>
                           )}
                         </div>
                       </div>
                     ))}
                   </div>
-                  <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
-                    <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                  <div className="px-4 py-2 border-t border-surface-200 dark:border-surface-700">
+                    <button className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-medium">
                       View all notifications
                     </button>
                   </div>
@@ -130,23 +127,22 @@ const DashboardHeader = () => {
             </AnimatePresence>
           </div>
 
-          {/* User Menu */}
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center space-x-3 p-1.5 pr-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-all"
             >
-              <img
-                src={generateAvatar(userProfile?.name || user?.displayName || 'User')}
-                alt="Profile"
-                className="w-8 h-8 rounded-full"
-              />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-violet-600 flex items-center justify-center shadow-sm">
+                <span className="text-white text-xs font-semibold">
+                  {userProfile?.name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
               <div className="text-left hidden sm:block">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-surface-900 dark:text-white">
                   {userProfile?.name || user?.displayName || 'User'}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {userProfile?.role || 'Professional'}
+                <p className="text-xs text-surface-500 dark:text-surface-400">
+                  {userProfile?.currentRole || 'Professional'}
                 </p>
               </div>
             </button>
@@ -154,43 +150,45 @@ const DashboardHeader = () => {
             <AnimatePresence>
               {showUserMenu && (
                 <motion.div
-                  className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
+                  className="absolute right-0 mt-2 w-56 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-50"
                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    <p className="font-medium text-gray-900 dark:text-white">
+                  <div className="px-4 py-3 border-b border-surface-200 dark:border-surface-700">
+                    <p className="font-medium text-surface-900 dark:text-white">
                       {userProfile?.name || user?.displayName || 'User'}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-surface-500 dark:text-surface-400">
                       {user?.email}
                     </p>
                   </div>
                   
                   <div className="py-2">
-                    <button
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    <Link
+                      href="/settings?tab=profile"
+                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <User size={16} />
                       <span>Profile Settings</span>
-                    </button>
+                    </Link>
                     
-                    <button
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    <Link
+                      href="/settings?tab=account"
+                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <Settings size={16} />
                       <span>Account Settings</span>
-                    </button>
+                    </Link>
                   </div>
                   
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+                  <div className="border-t border-surface-200 dark:border-surface-700 pt-2">
                     <button
                       onClick={handleLogout}
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-surface-50 dark:hover:bg-surface-700/50"
                     >
                       <LogOut size={16} />
                       <span>Sign Out</span>

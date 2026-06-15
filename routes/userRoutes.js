@@ -4,6 +4,7 @@ const { validate, schemas } = require('../middleware/validation');
 const User = require('../models/User');
 const SkillGraph = require('../models/SkillGraph');
 const Progress = require('../models/Progress');
+const Usage = require('../models/Usage');
 
 const router = express.Router();
 
@@ -147,6 +148,31 @@ router.get('/stats', authMiddleware, async (req, res) => {
     });
   }
 });
+
+// Upgrade or downgrade subscription plan
+router.post('/plan', authMiddleware, async (req, res) => {
+  try {
+    const { plan } = req.body
+    if (!['free', 'pro', 'enterprise'].includes(plan)) {
+      return res.status(400).json({ success: false, message: 'Invalid plan. Choose free, pro, or enterprise.' })
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { subscriptionPlan: plan, lastActive: new Date() },
+      { new: true }
+    ).select('-firebaseUid')
+
+    res.json({
+      success: true,
+      message: `Plan upgraded to ${plan}`,
+      data: user.toPublicJSON()
+    })
+  } catch (error) {
+    console.error('Plan update error:', error)
+    res.status(500).json({ success: false, message: 'Failed to update plan' })
+  }
+})
 
 // Delete user account
 router.delete('/account', authMiddleware, async (req, res) => {

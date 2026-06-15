@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    currentRole: {
+      type: String,
+      trim: true,
+    },
     role: {
       type: String,
       trim: true,
@@ -30,6 +34,13 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["free", "pro", "enterprise"],
       default: "free",
+    },
+    selectedCareerPath: {
+      targetRole: String,
+      requiredSkills: [String],
+      currentRole: String,
+      timeToAchieve: String,
+      difficulty: String
     },
     preferences: {
       industries: [String],
@@ -46,8 +57,15 @@ const UserSchema = new mongoose.Schema(
         default: 10,
       },
     },
+    notifications: {
+      weeklyProgress: { type: Boolean, default: true },
+      achievementAlerts: { type: Boolean, default: true },
+      resourceRecommendations: { type: Boolean, default: false },
+      careerMilestones: { type: Boolean, default: true },
+    },
     profile: {
       avatar: String,
+      banner: String,
       bio: String,
       location: String,
       linkedinUrl: String,

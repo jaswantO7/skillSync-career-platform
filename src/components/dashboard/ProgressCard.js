@@ -22,10 +22,10 @@ const ProgressCard = ({
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <p className="text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">
                 {title}
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-bold text-surface-900 dark:text-white">
                 {value}
               </p>
               {change && (

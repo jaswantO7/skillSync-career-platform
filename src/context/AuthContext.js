@@ -12,7 +12,7 @@ import {
   updateProfile
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { api } from '@/lib/api'
+import { api, setAuthToken } from '@/lib/api'
 import toast from 'react-hot-toast'
 import Cookies from 'js-cookie'          // ✅ NEW
 
@@ -46,10 +46,12 @@ export const AuthProvider = ({ children }) => {
             path: "/"
           })
 
+          setAuthToken(token)
+          setUser(firebaseUser)   // set user immediately so navigation works even if profile fetch fails
+
           const response = await api.get("/user/me", {
             headers: { Authorization: `Bearer ${token}` },
           })
-          setUser(firebaseUser)
           setUserProfile(response.data.data.user)
         } else {
           Cookies.remove("auth-token")  // ✅ remove cookie on no user
@@ -207,6 +209,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user,
       userProfile,
+      setUserProfile,
       loading,
       authLoading,
       signUp,

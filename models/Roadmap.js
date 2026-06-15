@@ -7,7 +7,7 @@ const ResourceSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['course', 'video', 'article', 'book', 'tutorial', 'practice', 'project'],
+    enum: ['course', 'video', 'article', 'book', 'tutorial', 'practice', 'project', 'certification', 'workshop', 'bootcamp', 'documentation', 'guide'],
     required: true
   },
   url: String,
@@ -102,6 +102,8 @@ const RoadmapSchema = new mongoose.Schema({
     expectedEndDate: Date
   },
   monthlyPlans: [MonthlyPlanSchema],
+  keyMilestones: [String],
+  estimatedOutcome: String,
   overallProgress: {
     type: Number,
     min: 0,

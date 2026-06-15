@@ -16,15 +16,15 @@ const Input = forwardRef(({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {label}
+        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+          {label}{props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       
       <div className="relative">
         {icon && iconPosition === 'left' && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="text-gray-400">{icon}</span>
+            <span className="text-surface-400">{icon}</span>
           </div>
         )}
         
@@ -43,7 +43,7 @@ const Input = forwardRef(({
         
         {icon && iconPosition === 'right' && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <span className="text-gray-400">{icon}</span>
+            <span className="text-surface-400">{icon}</span>
           </div>
         )}
       </div>
@@ -53,7 +53,7 @@ const Input = forwardRef(({
       )}
       
       {helper && !error && (
-        <p className="mt-1 text-sm text-gray-500">{helper}</p>
+        <p className="mt-1 text-sm text-surface-500">{helper}</p>
       )}
     </div>
   )

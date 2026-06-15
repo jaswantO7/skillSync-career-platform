@@ -2,11 +2,24 @@ const OpenAI = require('openai')
 const NodeCache = require('node-cache')
 const winston = require('winston')
 const pdfParse = require('pdf-parse')
+const Chat = require('../models/Chat')
 
-// Initialize OpenAI client
+// Initialize primary OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
+
+// Initialize Grok fallback client (OpenAI-compatible)
+let grok
+if (process.env.GROK_API_KEY) {
+  grok = new OpenAI({
+    apiKey: process.env.GROK_API_KEY,
+    baseURL: process.env.GROK_BASE_URL || 'https://api.groq.com/openai/v1',
+  })
+}
+
+// Track which provider we're using
+let activeProvider = process.env.GROK_API_KEY ? 'grok' : 'openai'
 
 // Initialize cache (1 hour TTL)
 const cache = new NodeCache({ stdTTL: parseInt(process.env.CACHE_TTL_SECONDS) || 3600 })
@@ -25,11 +38,18 @@ const logger = winston.createLogger({
   ]
 })
 
-// GPT Configuration
-const GPT_CONFIG = {
-  model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
-  max_tokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 4000,
-  temperature: parseFloat(process.env.OPENAI_TEMPERATURE) || 0.7,
+// Provider configurations
+const PROVIDERS = {
+  openai: {
+    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    max_tokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 4000,
+    temperature: parseFloat(process.env.OPENAI_TEMPERATURE) || 0.7,
+  },
+  grok: {
+    model: process.env.GROK_MODEL || 'llama-3.1-8b-instant',
+    max_tokens: parseInt(process.env.GROK_MAX_TOKENS) || 4000,
+    temperature: parseFloat(process.env.GROK_TEMPERATURE) || 0.7,
+  }
 }
 
 // Skill taxonomy for better categorization
@@ -41,48 +61,73 @@ const SKILL_CATEGORIES = {
   analytical: ['Data Analysis', 'Research', 'Problem Solving', 'Critical Thinking', 'Statistics', 'Reporting']
 }
 
-// Helper function to make GPT API calls with error handling
+// Helper function to make API calls with auto-fallback
 async function callGPT(messages, options = {}) {
-  try {
-    const response = await openai.chat.completions.create({
-      ...GPT_CONFIG,
-      ...options,
-      messages: messages,
-    })
+  const providers = [
+    { name: 'grok', client: grok, config: PROVIDERS.grok },
+  ]
 
-    // Log token usage for monitoring
-    logger.info('GPT API Call', {
-      tokens_used: response.usage?.total_tokens,
-      model: response.model,
-      finish_reason: response.choices[0]?.finish_reason
-    })
-
-    return response.choices[0]?.message?.content
-  } catch (error) {
-    logger.error('GPT API Error', {
-      error: error.message,
-      type: error.type,
-      code: error.code
-    })
-    
-    // Handle specific OpenAI errors
-    if (error.code === 'rate_limit_exceeded') {
-      throw new Error('AI service is currently busy. Please try again in a moment.')
-    } else if (error.code === 'insufficient_quota') {
-      throw new Error('AI service quota exceeded. Please contact support.')
-    } else if (error.code === 'invalid_api_key') {
-      throw new Error('AI service configuration error. Please contact support.')
-    }
-    
-    throw new Error('AI service temporarily unavailable. Please try again later.')
+  if (openai) {
+    providers.push({ name: 'openai', client: openai, config: PROVIDERS.openai })
   }
+
+  let lastError = null
+
+  for (const provider of providers) {
+    try {
+      const response = await provider.client.chat.completions.create({
+        ...provider.config,
+        ...options,
+        messages,
+      })
+
+      activeProvider = provider.name
+
+      logger.info(`${provider.name} API Call`, {
+        tokens_used: response.usage?.total_tokens,
+        model: response.model,
+        finish_reason: response.choices[0]?.finish_reason,
+        provider: provider.name,
+      })
+
+      return response.choices[0]?.message?.content
+    } catch (error) {
+      lastError = error
+      logger.warn(`${provider.name} API failed, trying fallback`, {
+        error: error.message,
+        code: error.code,
+        provider: provider.name,
+      })
+
+      // If this is not a quota/retryable error and it's the last provider, throw
+      if (provider.name === providers[providers.length - 1].name) {
+        break
+      }
+    }
+  }
+
+  // All providers failed
+  logger.error('All AI providers failed', {
+    error: lastError.message,
+    code: lastError.code,
+  })
+
+  if (lastError.code === 'rate_limit_exceeded') {
+    throw new Error('AI service is currently busy. Please try again in a moment.')
+  } else if (lastError.code === 'insufficient_quota') {
+    throw new Error('AI service quota exceeded. Please try again later or add a fallback API key.')
+  } else if (lastError.code === 'invalid_api_key') {
+    throw new Error('AI service configuration error. Please check your API keys.')
+  }
+
+  throw new Error('AI service temporarily unavailable. Please try again later.')
 }
 
 // Parse resume from file buffer
 async function parseResumeFromFile(fileBuffer, filename) {
   try {
     let resumeText = ''
-    
+
     if (filename.toLowerCase().endsWith('.pdf')) {
       const pdfData = await pdfParse(fileBuffer)
       resumeText = pdfData.text
@@ -90,11 +135,11 @@ async function parseResumeFromFile(fileBuffer, filename) {
       // Handle text files
       resumeText = fileBuffer.toString('utf-8')
     }
-    
+
     if (!resumeText || resumeText.trim().length < 50) {
       throw new Error('Resume content is too short or could not be extracted')
     }
-    
+
     return resumeText
   } catch (error) {
     logger.error('Resume parsing error', { error: error.message, filename })
@@ -112,7 +157,7 @@ function generateCacheKey(type, data) {
 async function parseResume(fileBuffer, filename) {
   try {
     const resumeText = await parseResumeFromFile(fileBuffer, filename)
-    
+
     // Check cache first
     const cacheKey = generateCacheKey('parse_resume', resumeText.substring(0, 500))
     const cachedResult = cache.get(cacheKey)
@@ -120,7 +165,7 @@ async function parseResume(fileBuffer, filename) {
       logger.info('Resume parsing cache hit')
       return cachedResult
     }
-    
+
     const prompt = `
 You are an expert HR professional and career analyst. Analyze the following resume and extract structured information in JSON format.
 
@@ -130,6 +175,7 @@ ${resumeText}
 Please extract and return ONLY a valid JSON object with the following structure:
 {
   "skills": ["skill1", "skill2", ...],
+  "skillProficiencies": {"skill1": 4, "skill2": 3, ...},
   "tools": ["tool1", "tool2", ...],
   "roles": ["role1", "role2", ...],
   "experienceYears": number,
@@ -142,13 +188,14 @@ Please extract and return ONLY a valid JSON object with the following structure:
 
 Guidelines:
 - Extract 10-20 most relevant technical and soft skills
+- For skillProficiencies, estimate each skill's proficiency on a scale of 1-5 based on how the resume presents it (frequency of mention, context used, seniority implied). Use 3 as default for skills mentioned with no depth indicators.
 - Include software, tools, and technologies used
 - List job titles/roles held
 - Estimate total years of professional experience
 - Identify industries worked in
 - Include educational qualifications and certifications
 - Provide a 2-3 sentence professional summary
-- Ensure all arrays contain strings and experienceYears is a number
+- Ensure skills and tools arrays contain strings, experienceYears is a number, skillProficiencies keys match skills array entries
 - Return ONLY the JSON object, no additional text
 `
 
@@ -164,7 +211,7 @@ Guidelines:
     ]
 
     const response = await callGPT(messages, { temperature: 0.3 })
-    
+
     // Parse and validate JSON response
     let parsedData
     try {
@@ -173,9 +220,9 @@ Guidelines:
       if (!jsonMatch) {
         throw new Error('No JSON found in response')
       }
-      
+
       parsedData = JSON.parse(jsonMatch[0])
-      
+
       // Validate required fields
       const requiredFields = ['skills', 'tools', 'roles', 'experienceYears', 'industries', 'education']
       for (const field of requiredFields) {
@@ -183,13 +230,13 @@ Guidelines:
           parsedData[field] = field === 'experienceYears' ? 0 : []
         }
       }
-      
+
       // Ensure experienceYears is a number
       parsedData.experienceYears = parseInt(parsedData.experienceYears) || 0
-      
+
     } catch (parseError) {
       logger.error('JSON parsing error', { error: parseError.message, response })
-      
+
       // Fallback parsing with basic extraction
       parsedData = {
         skills: extractSkillsFromText(resumeText),
@@ -203,17 +250,17 @@ Guidelines:
         summary: 'Professional with diverse experience and skills'
       }
     }
-    
+
     // Cache the result
     cache.set(cacheKey, parsedData)
-    
+
     logger.info('Resume parsed successfully', {
       skillsCount: parsedData.skills.length,
       experienceYears: parsedData.experienceYears
     })
-    
+
     return parsedData
-    
+
   } catch (error) {
     logger.error('Resume parsing failed', { error: error.message })
     throw error
@@ -221,15 +268,15 @@ Guidelines:
 }
 
 // Recommend career paths based on current skills and goals
-async function recommendCareerPaths(currentSkills, goals, experienceYears, currentRole) {
+async function recommendCareerPaths(currentSkills, goals, experienceYears, currentRole, targetRole) {
   try {
-    const cacheKey = generateCacheKey('career_paths', { currentSkills, goals, experienceYears, currentRole })
+    const cacheKey = generateCacheKey('career_paths', { currentSkills, goals, experienceYears, currentRole, targetRole })
     const cachedResult = cache.get(cacheKey)
     if (cachedResult) {
       logger.info('Career path recommendations cache hit')
       return cachedResult
     }
-    
+
     const prompt = `
 You are a senior career counselor with expertise in technology, business, and professional development. Based on the provided information, recommend 3-5 realistic career progression paths.
 
@@ -238,6 +285,9 @@ Current Profile:
 - Experience: ${experienceYears} years
 - Current Skills: ${currentSkills.join(', ')}
 - Career Goals: ${goals.join(', ')}
+${targetRole ? `- Desired Target Role: ${targetRole}` : ''}
+
+${targetRole ? `The user is specifically interested in becoming a ${targetRole}. Please provide 3-5 detailed paths, milestones, and a realistic timeline to achieve this goal. Include alternative or related roles as secondary options.` : ''}
 
 Please provide career path recommendations in JSON format:
 {
@@ -276,20 +326,20 @@ Guidelines:
     ]
 
     const response = await callGPT(messages, { temperature: 0.5 })
-    
+
     let recommendations
     try {
       const jsonMatch = response.match(/\{[\s\S]*\}/)
       recommendations = JSON.parse(jsonMatch[0])
-      
+
       // Validate structure
       if (!recommendations.recommendations || !Array.isArray(recommendations.recommendations)) {
         throw new Error('Invalid recommendations structure')
       }
-      
+
     } catch (parseError) {
       logger.error('Career path JSON parsing error', { error: parseError.message })
-      
+
       // Fallback recommendations
       recommendations = {
         recommendations: [
@@ -306,16 +356,16 @@ Guidelines:
         ]
       }
     }
-    
+
     cache.set(cacheKey, recommendations)
-    
+
     logger.info('Career paths recommended', {
       pathsCount: recommendations.recommendations.length,
       experienceYears
     })
-    
+
     return recommendations
-    
+
   } catch (error) {
     logger.error('Career path recommendation failed', { error: error.message })
     throw error
@@ -331,7 +381,7 @@ async function generateLearningRoadmap(targetRole, requiredSkills, timeframe, ho
       logger.info('Learning roadmap cache hit')
       return cachedResult
     }
-    
+
     const prompt = `
 You are an expert learning and development specialist. Create a detailed ${timeframe}-month learning roadmap to help someone transition to "${targetRole}".
 
@@ -359,12 +409,13 @@ Create a month-by-month learning plan in JSON format:
       "resources": [
         {
           "title": "Resource Title",
-          "type": "course|book|tutorial|project|certification",
+          "type": "course|video|article|book|tutorial|practice|project|certification|workshop|bootcamp|documentation|guide",
           "url": "https://example.com",
           "provider": "Platform/Publisher",
           "duration": "X hours",
           "difficulty": "beginner|intermediate|advanced",
-          "description": "Brief description"
+          "description": "Brief description",
+          "cost": { "amount": 0, "currency": "USD" }
         }
       ],
       "milestones": ["milestone1", "milestone2"],
@@ -382,6 +433,7 @@ Guidelines:
 - Balance breadth and depth of learning
 - Include milestone projects to demonstrate progress
 - Consider the available hours per week for realistic pacing
+- For each resource, include cost.amount (0 for free, actual price for paid). Set currency to "USD".
 - Return ONLY the JSON object
 `
 
@@ -397,17 +449,17 @@ Guidelines:
     ]
 
     const response = await callGPT(messages, { temperature: 0.4 })
-    
+
     let roadmap
     try {
       const jsonMatch = response.match(/\{[\s\S]*\}/)
       roadmap = JSON.parse(jsonMatch[0])
-      
+
       // Validate structure
       if (!roadmap.monthlyPlans || !Array.isArray(roadmap.monthlyPlans)) {
         throw new Error('Invalid roadmap structure')
       }
-      
+
       // Ensure all months have required fields
       roadmap.monthlyPlans.forEach((month, index) => {
         if (!month.month) month.month = index + 1
@@ -415,24 +467,24 @@ Guidelines:
         if (!month.milestones) month.milestones = []
         if (!month.skills) month.skills = []
       })
-      
+
     } catch (parseError) {
       logger.error('Roadmap JSON parsing error', { error: parseError.message })
-      
+
       // Generate fallback roadmap
       roadmap = generateFallbackRoadmap(targetRole, requiredSkills, timeframe, hoursPerWeek)
     }
-    
+
     cache.set(cacheKey, roadmap)
-    
+
     logger.info('Learning roadmap generated', {
       targetRole,
       months: timeframe,
       monthlyPlansCount: roadmap.monthlyPlans.length
     })
-    
+
     return roadmap
-    
+
   } catch (error) {
     logger.error('Learning roadmap generation failed', { error: error.message })
     throw error
@@ -448,7 +500,7 @@ async function suggestProjects(targetRole, skills, difficultyLevel = 'intermedia
       logger.info('Project suggestions cache hit')
       return cachedResult
     }
-    
+
     const prompt = `
 You are a senior technical mentor and project advisor. Suggest 4-6 portfolio projects that would be perfect for someone targeting the role of "${targetRole}" with skills in ${skills.join(', ')}.
 
@@ -503,60 +555,57 @@ Guidelines:
     ]
 
     const response = await callGPT(messages, { temperature: 0.6 })
-    
+
     let projects
     try {
       const jsonMatch = response.match(/\{[\s\S]*\}/)
       projects = JSON.parse(jsonMatch[0])
-      
+
       // Validate structure
       if (!projects.projects || !Array.isArray(projects.projects)) {
         throw new Error('Invalid projects structure')
       }
-      
+
       // Ensure all projects have required fields
       projects.projects.forEach(project => {
         if (!project.deliverables) project.deliverables = []
         if (!project.skillsUsed) project.skillsUsed = skills.slice(0, 3)
         if (!project.estimatedHours) project.estimatedHours = 20
       })
-      
+
     } catch (parseError) {
       logger.error('Projects JSON parsing error', { error: parseError.message })
-      
+
       // Generate fallback projects
       projects = generateFallbackProjects(targetRole, skills, difficultyLevel)
     }
-    
+
     cache.set(cacheKey, projects)
-    
+
     logger.info('Projects suggested', {
       targetRole,
       projectsCount: projects.projects.length,
       difficultyLevel
     })
-    
+
     return projects
-    
+
   } catch (error) {
     logger.error('Project suggestion failed', { error: error.message })
     throw error
   }
 }
 
-// AI Mentor Chat with conversation memory
-const conversationMemory = new Map()
+// AI Mentor Chat with DB-backed conversation memory
 
 async function mentorChat(userId, message, context = {}) {
   try {
-    // Get or initialize conversation history
-    let conversation = conversationMemory.get(userId) || []
-    
-    // Limit conversation history to last 10 exchanges
-    if (conversation.length > 20) {
-      conversation = conversation.slice(-20)
-    }
-    
+    // Get chat history from DB
+    const chat = await Chat.getOrCreate(userId)
+
+    // Use last 20 messages for context
+    const recent = chat.messages.slice(-20)
+
     const systemPrompt = `
 You are Alex, a professional AI career mentor and coach with 15+ years of experience in technology, business, and professional development. You provide personalized, actionable career advice.
 
@@ -586,38 +635,34 @@ Guidelines:
 
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...conversation,
+      ...recent.map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: message }
     ]
 
-    const response = await callGPT(messages, { 
+    const response = await callGPT(messages, {
       temperature: 0.7,
-      max_tokens: 800 
+      max_tokens: 800
     })
-    
-    // Update conversation history
-    conversation.push(
-      { role: 'user', content: message },
-      { role: 'assistant', content: response }
-    )
-    conversationMemory.set(userId, conversation)
-    
+
+    // Persist to DB
+    await Chat.addMessage(userId, 'user', message)
+    await Chat.addMessage(userId, 'assistant', response)
+
     logger.info('Mentor chat response generated', {
       userId: userId.substring(0, 8),
       messageLength: message.length,
       responseLength: response.length
     })
-    
+
     return {
       response,
       conversationId: userId,
       timestamp: new Date().toISOString()
     }
-    
+
   } catch (error) {
     logger.error('Mentor chat failed', { error: error.message, userId })
-    
-    // Fallback response
+
     return {
       response: "I'm having trouble connecting right now, but I'm here to help with your career questions. Could you try asking again in a moment?",
       conversationId: userId,
@@ -633,8 +678,8 @@ function extractSkillsFromText(text) {
     'Project Management', 'Leadership', 'Communication', 'Problem Solving',
     'Data Analysis', 'Microsoft Office', 'Git', 'Agile', 'Scrum'
   ]
-  
-  return commonSkills.filter(skill => 
+
+  return commonSkills.filter(skill =>
     text.toLowerCase().includes(skill.toLowerCase())
   ).slice(0, 10)
 }
@@ -645,8 +690,8 @@ function extractToolsFromText(text) {
     'Slack', 'Trello', 'Jira', 'Git', 'GitHub', 'VS Code',
     'Photoshop', 'Figma', 'Salesforce', 'Google Analytics'
   ]
-  
-  return commonTools.filter(tool => 
+
+  return commonTools.filter(tool =>
     text.toLowerCase().includes(tool.toLowerCase())
   ).slice(0, 8)
 }
@@ -656,8 +701,8 @@ function extractRolesFromText(text) {
     'Manager', 'Developer', 'Analyst', 'Coordinator', 'Specialist',
     'Lead', 'Senior', 'Associate', 'Director', 'Engineer'
   ]
-  
-  return commonRoles.filter(role => 
+
+  return commonRoles.filter(role =>
     text.toLowerCase().includes(role.toLowerCase())
   ).slice(0, 5)
 }
@@ -673,29 +718,29 @@ function estimateExperience(text) {
 
 function generateFallbackRoadmap(targetRole, requiredSkills, timeframe, hoursPerWeek) {
   const monthlyPlans = []
-  
+
   for (let i = 1; i <= timeframe; i++) {
     monthlyPlans.push({
       month: i,
-      title: `Month ${i}: ${requiredSkills[i-1] || 'Skill Development'}`,
-      focus: `Focus on developing ${requiredSkills[i-1] || 'core skills'} for ${targetRole}`,
-      skills: requiredSkills.slice((i-1)*2, i*2),
+      title: `Month ${i}: ${requiredSkills[i - 1] || 'Skill Development'}`,
+      focus: `Focus on developing ${requiredSkills[i - 1] || 'core skills'} for ${targetRole}`,
+      skills: requiredSkills.slice((i - 1) * 2, i * 2),
       resources: [
         {
-          title: `${requiredSkills[i-1] || 'Skill'} Fundamentals Course`,
+          title: `${requiredSkills[i - 1] || 'Skill'} Fundamentals Course`,
           type: 'course',
           url: 'https://coursera.org',
           provider: 'Coursera',
           duration: `${hoursPerWeek} hours`,
           difficulty: 'intermediate',
-          description: `Learn the fundamentals of ${requiredSkills[i-1] || 'the skill'}`
+          description: `Learn the fundamentals of ${requiredSkills[i - 1] || 'the skill'}`
         }
       ],
-      milestones: [`Complete ${requiredSkills[i-1] || 'skill'} basics`, 'Build practice project'],
-      practiceProjects: [`${requiredSkills[i-1] || 'Skill'} practice project`]
+      milestones: [`Complete ${requiredSkills[i - 1] || 'skill'} basics`, 'Build practice project'],
+      practiceProjects: [`${requiredSkills[i - 1] || 'Skill'} practice project`]
     })
   }
-  
+
   return {
     title: `Path to ${targetRole}`,
     duration: {

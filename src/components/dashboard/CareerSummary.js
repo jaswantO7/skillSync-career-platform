@@ -17,11 +17,11 @@ const CareerSummary = ({ roadmap, userProfile }) => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <Target className="w-16 h-16 text-surface-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-surface-900 dark:text-white mb-2">
               Ready to Start Your Journey?
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-surface-600 dark:text-surface-400 mb-6">
               Upload your resume to get personalized career recommendations and learning roadmaps.
             </p>
             <Link href="/skill-audit">
@@ -48,29 +48,29 @@ const CareerSummary = ({ roadmap, userProfile }) => {
       <CardContent>
         <div className="space-y-6">
           {/* Current Path */}
-          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-violet-50 dark:from-emerald-900/20 dark:to-violet-900/20 rounded-lg">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center">
                 <Target className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Current Role</p>
-                <p className="font-semibold text-gray-900 dark:text-white">
+                <p className="text-sm text-surface-600 dark:text-surface-400">Current Role</p>
+                <p className="font-semibold text-surface-900 dark:text-white">
                   {roadmap.currentRole || userProfile?.role || 'Professional'}
                 </p>
               </div>
             </div>
             
-            <ArrowRight className="w-6 h-6 text-gray-400" />
+            <ArrowRight className="w-6 h-6 text-surface-400" />
             
             <div className="flex items-center space-x-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Target Role</p>
-                <p className="font-semibold text-gray-900 dark:text-white">
+                <p className="text-sm text-surface-600 dark:text-surface-400">Target Role</p>
+                <p className="font-semibold text-surface-900 dark:text-white">
                   {roadmap.targetRole}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-secondary-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-violet-600 rounded-full flex items-center justify-center">
                 <Target className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -79,10 +79,10 @@ const CareerSummary = ({ roadmap, userProfile }) => {
           {/* Progress */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-surface-700 dark:text-surface-300">
                 Overall Progress
               </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-surface-500 dark:text-surface-400">
                 {Math.round(roadmap.overallProgress || 0)}%
               </span>
             </div>
@@ -94,16 +94,16 @@ const CareerSummary = ({ roadmap, userProfile }) => {
 
           {/* Current Focus */}
           {currentMonth && (
-            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="p-4 bg-surface-50 dark:bg-surface-800 rounded-lg">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-gray-900 dark:text-white">
+                <h4 className="font-medium text-surface-900 dark:text-white">
                   Current Focus: {currentMonth.title}
                 </h4>
                 <Badge variant="primary" size="sm">
                   Month {currentMonth.month}
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <p className="text-sm text-surface-600 dark:text-surface-400 mb-3">
                 {currentMonth.focus}
               </p>
               <div className="flex flex-wrap gap-2">

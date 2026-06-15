@@ -145,4 +145,16 @@ ProjectSchema.methods.startProject = function() {
   return this.save();
 };
 
+// Virtual field for estimated hours (computed from estimatedDuration)
+ProjectSchema.virtual('estimatedHours').get(function() {
+  if (!this.estimatedDuration) return 0;
+  if (this.estimatedDuration.unit === 'hours') return this.estimatedDuration.value;
+  if (this.estimatedDuration.unit === 'days') return this.estimatedDuration.value * 8;
+  if (this.estimatedDuration.unit === 'weeks') return this.estimatedDuration.value * 40;
+  return this.estimatedDuration.value;
+});
+
+ProjectSchema.set('toJSON', { virtuals: true });
+ProjectSchema.set('toObject', { virtuals: true });
+
 module.exports = mongoose.model('Project', ProjectSchema);

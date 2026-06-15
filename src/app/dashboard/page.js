@@ -37,44 +37,20 @@ const Dashboard = () => {
   }, [progress])
 
   const quickActions = [
-    {
-      title: 'Upload Resume',
-      description: 'Get AI-powered skill analysis',
-      href: '/skill-audit',
-      icon: BookOpen,
-      color: 'bg-blue-500'
-    },
-    {
-      title: 'View Roadmap',
-      description: 'Check your learning progress',
-      href: '/roadmap',
-      icon: Target,
-      color: 'bg-green-500'
-    },
-    {
-      title: 'Browse Projects',
-      description: 'Find portfolio projects',
-      href: '/projects',
-      icon: Trophy,
-      color: 'bg-purple-500'
-    },
-    {
-      title: 'Chat with Mentor',
-      description: 'Get career guidance',
-      href: '/mentor',
-      icon: Star,
-      color: 'bg-yellow-500'
-    }
+    { title: 'Upload Resume', description: 'Get AI-powered skill analysis', href: '/skill-audit', icon: BookOpen, gradient: 'from-emerald-500 to-emerald-600' },
+    { title: 'View Roadmap', description: 'Check your learning progress', href: '/roadmap', icon: Target, gradient: 'from-emerald-500 to-violet-500' },
+    { title: 'Browse Projects', description: 'Find portfolio projects', href: '/projects', icon: Trophy, gradient: 'from-violet-500 to-violet-600' },
+    { title: 'Chat with Mentor', description: 'Get career guidance', href: '/mentor', icon: Star, gradient: 'from-violet-500 to-emerald-500' },
   ]
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="spinner w-8 h-8 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+            <div className="spinner w-8 h-8 mx-auto mb-4 text-emerald-600"></div>
+            <p className="text-surface-500 dark:text-surface-400">Loading dashboard...</p>
           </div>
         </div>
       </div>
@@ -82,7 +58,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -90,100 +66,43 @@ const Dashboard = () => {
         
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Welcome Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  Welcome back, {userProfile?.name || user?.displayName || 'there'}! 👋
+                <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+                  Welcome back, {userProfile?.name || user?.displayName || 'there'}!
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-surface-500 dark:text-surface-400">
                   Here's your career growth overview and recent progress.
                 </p>
               </div>
             </motion.div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
-                <ProgressCard
-                  title="Total Points"
-                  value={stats.totalPoints}
-                  icon={Trophy}
-                  color="text-yellow-600"
-                  bgColor="bg-yellow-100"
-                />
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+                <ProgressCard title="Total Points" value={stats.totalPoints} icon={Trophy} color="text-emerald-600" bgColor="bg-emerald-100" />
               </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <ProgressCard
-                  title="Current Level"
-                  value={stats.level}
-                  icon={TrendingUp}
-                  color="text-blue-600"
-                  bgColor="bg-blue-100"
-                />
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
+                <ProgressCard title="Current Level" value={stats.level} icon={TrendingUp} color="text-violet-600" bgColor="bg-violet-100" />
               </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                <ProgressCard
-                  title="Current Streak"
-                  value={`${stats.streak?.current || 0} days`}
-                  icon={Calendar}
-                  color="text-green-600"
-                  bgColor="bg-green-100"
-                />
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
+                <ProgressCard title="Current Streak" value={`${stats.streak?.current || 0} days`} icon={Calendar} color="text-emerald-600" bgColor="bg-emerald-100" />
               </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                <ProgressCard
-                  title="Weekly Hours"
-                  value={`${stats.weeklyProgress?.hoursCompleted || 0}/${stats.weeklyProgress?.hoursTarget || 10}`}
-                  icon={Clock}
-                  color="text-purple-600"
-                  bgColor="bg-purple-100"
-                />
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
+                <ProgressCard title="Weekly Hours" value={`${stats.weeklyProgress?.hoursCompleted || 0}/${stats.weeklyProgress?.hoursTarget || 10}`} icon={Clock} color="text-violet-600" bgColor="bg-violet-100" />
               </motion.div>
             </div>
 
-            {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Career Summary */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                >
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
                   <CareerSummary roadmap={roadmap} userProfile={userProfile} />
                 </motion.div>
 
-                {/* Weekly Progress */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6 }}
-                >
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }}>
                   <Card>
                     <CardHeader>
                       <CardTitle>Weekly Progress</CardTitle>
@@ -192,55 +111,40 @@ const Dashboard = () => {
                       <div className="space-y-4">
                         <div>
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="text-sm font-medium text-surface-700 dark:text-surface-300">
                               Learning Hours
                             </span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                            <span className="text-sm text-surface-500 dark:text-surface-400">
                               {stats.weeklyProgress?.hoursCompleted || 0} / {stats.weeklyProgress?.hoursTarget || 10} hours
                             </span>
                           </div>
-                          <Progress 
-                            value={stats.weeklyProgress?.hoursCompleted || 0} 
-                            max={stats.weeklyProgress?.hoursTarget || 10}
-                            color="primary"
-                          />
+                          <Progress value={stats.weeklyProgress?.hoursCompleted || 0} max={stats.weeklyProgress?.hoursTarget || 10} color="primary" />
                         </div>
-                        
                         <div>
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="text-sm font-medium text-surface-700 dark:text-surface-300">
                               Tasks Completed
                             </span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                            <span className="text-sm text-surface-500 dark:text-surface-400">
                               {stats.weeklyProgress?.tasksCompleted || 0} / {stats.weeklyProgress?.tasksTarget || 5} tasks
                             </span>
                           </div>
-                          <Progress 
-                            value={stats.weeklyProgress?.tasksCompleted || 0} 
-                            max={stats.weeklyProgress?.tasksTarget || 5}
-                            color="success"
-                          />
+                          <Progress value={stats.weeklyProgress?.tasksCompleted || 0} max={stats.weeklyProgress?.tasksTarget || 5} color="success" />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </motion.div>
 
-                {/* Active Projects */}
                 {projects && projects.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.7 }}
-                  >
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.7 }}>
                     <Card>
                       <CardHeader>
                         <div className="flex justify-between items-center">
                           <CardTitle>Active Projects</CardTitle>
                           <Link href="/projects">
                             <Button variant="ghost" size="sm">
-                              View All
-                              <ArrowRight size={16} className="ml-2" />
+                              View All <ArrowRight size={16} className="ml-2" />
                             </Button>
                           </Link>
                         </div>
@@ -248,29 +152,17 @@ const Dashboard = () => {
                       <CardContent>
                         <div className="space-y-4">
                           {projects.slice(0, 3).map((project) => (
-                            <div key={project._id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div key={project._id} className="flex items-center justify-between p-4 bg-surface-50 dark:bg-surface-800/50 rounded-xl">
                               <div className="flex-1">
-                                <h4 className="font-medium text-gray-900 dark:text-white">
-                                  {project.title}
-                                </h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                  {project.description}
-                                </p>
+                                <h4 className="font-medium text-surface-900 dark:text-white">{project.title}</h4>
+                                <p className="text-sm text-surface-500 dark:text-surface-400 mt-1">{project.description}</p>
                                 <div className="flex items-center space-x-2 mt-2">
-                                  <Badge variant="outline" size="xs">
-                                    {project.difficulty}
-                                  </Badge>
-                                  <span className="text-xs text-gray-500">
-                                    {project.progress}% complete
-                                  </span>
+                                  <Badge variant="outline" size="xs">{project.difficulty}</Badge>
+                                  <span className="text-xs text-surface-400">{project.progress}% complete</span>
                                 </div>
                               </div>
                               <div className="ml-4">
-                                <Progress 
-                                  value={project.progress} 
-                                  size="sm" 
-                                  className="w-20"
-                                />
+                                <Progress value={project.progress} size="sm" className="w-20" />
                               </div>
                             </div>
                           ))}
@@ -281,14 +173,8 @@ const Dashboard = () => {
                 )}
               </div>
 
-              {/* Right Column */}
               <div className="space-y-6">
-                {/* Quick Actions */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.8 }}
-                >
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.8 }}>
                   <Card>
                     <CardHeader>
                       <CardTitle>Quick Actions</CardTitle>
@@ -299,19 +185,15 @@ const Dashboard = () => {
                           const Icon = action.icon
                           return (
                             <Link key={action.title} href={action.href}>
-                              <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-                                <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mr-3`}>
+                              <div className="flex items-center p-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-all cursor-pointer">
+                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mr-3 shadow-sm`}>
                                   <Icon size={20} className="text-white" />
                                 </div>
                                 <div className="flex-1">
-                                  <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-                                    {action.title}
-                                  </h4>
-                                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    {action.description}
-                                  </p>
+                                  <h4 className="font-medium text-surface-900 dark:text-white text-sm">{action.title}</h4>
+                                  <p className="text-xs text-surface-500 dark:text-surface-400">{action.description}</p>
                                 </div>
-                                <ArrowRight size={16} className="text-gray-400" />
+                                <ArrowRight size={16} className="text-surface-400" />
                               </div>
                             </Link>
                           )
@@ -321,12 +203,7 @@ const Dashboard = () => {
                   </Card>
                 </motion.div>
 
-                {/* Recent Activity */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.9 }}
-                >
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }}>
                   <Card>
                     <CardHeader>
                       <CardTitle>Recent Activity</CardTitle>
@@ -336,21 +213,17 @@ const Dashboard = () => {
                         <div className="space-y-3">
                           {recentActivity.map((activity, index) => (
                             <div key={index} className="flex items-start space-x-3">
-                              <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+                              <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>
                               <div className="flex-1">
-                                <p className="text-sm text-gray-900 dark:text-white">
-                                  {activity.description}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  {new Date(activity.timestamp).toLocaleDateString()}
-                                </p>
+                                <p className="text-sm text-surface-900 dark:text-white">{activity.description}</p>
+                                <p className="text-xs text-surface-500 dark:text-surface-400">{new Date(activity.timestamp).toLocaleDateString()}</p>
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : (
                         <div className="text-center py-6">
-                          <p className="text-gray-500 dark:text-gray-400 text-sm">
+                          <p className="text-surface-500 dark:text-surface-400 text-sm">
                             No recent activity yet. Start learning to see your progress here!
                           </p>
                           <Link href="/skill-audit">

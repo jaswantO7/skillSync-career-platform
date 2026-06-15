@@ -36,13 +36,13 @@ const CardHeader = ({ children, className, ...props }) => (
 )
 
 const CardTitle = ({ children, className, ...props }) => (
-  <h3 className={cn('text-lg font-semibold text-gray-900 dark:text-gray-100', className)} {...props}>
+  <h3 className={cn('text-lg font-semibold text-surface-900 dark:text-surface-50', className)} {...props}>
     {children}
   </h3>
 )
 
 const CardDescription = ({ children, className, ...props }) => (
-  <p className={cn('text-sm text-gray-600 dark:text-gray-400 mt-1', className)} {...props}>
+  <p className={cn('text-sm text-surface-500 dark:text-surface-400 mt-1', className)} {...props}>
     {children}
   </p>
 )
@@ -54,7 +54,7 @@ const CardContent = ({ children, className, ...props }) => (
 )
 
 const CardFooter = ({ children, className, ...props }) => (
-  <div className={cn('mt-4 pt-4 border-t border-gray-100 dark:border-gray-700', className)} {...props}>
+  <div className={cn('mt-4 pt-4 border-t border-surface-200 dark:border-surface-700', className)} {...props}>
     {children}
   </div>
 )

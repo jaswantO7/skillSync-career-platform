@@ -77,7 +77,7 @@ export const ProgressProvider = ({ children }) => {
       await fetchUserStats() // Refresh stats
       
       // Show achievement notification if level increased
-      if (response.data.data.level > stats.level) {
+      if (stats && response.data.data.level > stats.level) {
         toast.success(`🎉 Level up! You're now level ${response.data.data.level}!`, {
           duration: 6000,
         })
@@ -87,7 +87,6 @@ export const ProgressProvider = ({ children }) => {
     } catch (error) {
       console.error('Update progress error:', error)
       toast.error('Failed to update progress')
-      throw error
     }
   }
 

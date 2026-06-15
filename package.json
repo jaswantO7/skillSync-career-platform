@@ -53,6 +53,7 @@
     "winston": "^3.18.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4.1.16",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.1",

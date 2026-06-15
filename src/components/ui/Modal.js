@@ -65,7 +65,7 @@ const Modal = ({
           {/* Modal */}
           <motion.div
             className={cn(
-              'relative w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-hidden',
+              'relative w-full glass-card rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700 max-h-[90vh] overflow-hidden',
               sizes[size],
               className
             )}
@@ -76,15 +76,15 @@ const Modal = ({
           >
             {/* Header */}
             {(title || showCloseButton) && (
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between p-6 border-b border-surface-200 dark:border-surface-700">
                 <div>
                   {title && (
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    <h2 className="text-xl font-semibold text-surface-900 dark:text-surface-100">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    <p className="mt-1 text-sm text-surface-600 dark:text-surface-400">
                       {description}
                     </p>
                   )}
@@ -120,19 +120,19 @@ const ModalHeader = ({ children, className, ...props }) => (
 )
 
 const ModalTitle = ({ children, className, ...props }) => (
-  <h3 className={cn('text-lg font-semibold text-gray-900 dark:text-gray-100', className)} {...props}>
+  <h3 className={cn('text-lg font-semibold text-surface-900 dark:text-surface-100', className)} {...props}>
     {children}
   </h3>
 )
 
 const ModalDescription = ({ children, className, ...props }) => (
-  <p className={cn('text-sm text-gray-600 dark:text-gray-400 mt-1', className)} {...props}>
+  <p className={cn('text-sm text-surface-600 dark:text-surface-400 mt-1', className)} {...props}>
     {children}
   </p>
 )
 
 const ModalFooter = ({ children, className, ...props }) => (
-  <div className={cn('flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700', className)} {...props}>
+  <div className={cn('flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-surface-200 dark:border-surface-700', className)} {...props}>
     {children}
   </div>
 )

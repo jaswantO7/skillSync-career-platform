@@ -43,6 +43,22 @@ const CareerPathSchema = new mongoose.Schema({
     required: true
   },
   pathSteps: [PathStepSchema],
+  requiredSkills: [String],
+  timeToAchieve: {
+    type: String
+  },
+  difficulty: {
+    type: String,
+    enum: ['beginner', 'intermediate', 'advanced', 'expert']
+  },
+  salaryRange: {
+    type: String
+  },
+  marketDemand: {
+    type: String,
+    enum: ['high', 'medium', 'low']
+  },
+  keySteps: [String],
   reasoning: {
     type: String,
     required: true
@@ -55,8 +71,8 @@ const CareerPathSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'completed', 'paused', 'abandoned'],
-    default: 'active'
+    enum: ['suggested', 'active', 'completed', 'paused', 'abandoned'],
+    default: 'suggested'
   },
   progress: {
     currentStep: {

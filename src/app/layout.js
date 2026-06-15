@@ -36,7 +36,7 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <AuthProvider>
             <ProgressProvider>
-              <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+              <div className="min-h-screen bg-white dark:bg-surface-950 transition-colors duration-300">
                 {children}
               </div>
               <Toaster
@@ -44,7 +44,7 @@ export default function RootLayout({ children }) {
                 toastOptions={{
                   duration: 4000,
                   className:
-                    "bg-white dark:bg-gray-800 text-gray-900 dark:text-white",
+                    "bg-white dark:bg-surface-800 text-surface-900 dark:text-white",
                 }}
               />
             </ProgressProvider>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -13,69 +13,62 @@ import {
   MessageCircle, 
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { api } from '@/lib/api'
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false)
+  const [aiStatus, setAiStatus] = useState({ mode: 'checking', label: 'Checking...' })
   const pathname = usePathname()
 
+  useEffect(() => {
+    const checkAI = async () => {
+      try {
+        const res = await api.get('/health')
+        const data = res.data
+        if (data.aiMode === 'grok') {
+          setAiStatus({ mode: 'full', label: 'AI: Groq' })
+        } else if (data.aiMode === 'openai') {
+          setAiStatus({ mode: 'full', label: 'AI: OpenAI' })
+        } else {
+          setAiStatus({ mode: 'limited', label: 'AI: Unavailable' })
+        }
+      } catch {
+        setAiStatus({ mode: 'unknown', label: 'AI: Unknown' })
+      }
+    }
+    checkAI()
+  }, [])
+
   const navigation = [
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: LayoutDashboard,
-    },
-    {
-      name: 'Skill Audit',
-      href: '/skill-audit',
-      icon: FileText,
-    },
-    {
-      name: 'Career Path',
-      href: '/career-path',
-      icon: Target,
-    },
-    {
-      name: 'Roadmap',
-      href: '/roadmap',
-      icon: Map,
-    },
-    {
-      name: 'Projects',
-      href: '/projects',
-      icon: FolderOpen,
-    },
-    {
-      name: 'Mentor Chat',
-      href: '/mentor',
-      icon: MessageCircle,
-    },
-    {
-      name: 'Settings',
-      href: '/settings',
-      icon: Settings,
-    },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Skill Audit', href: '/skill-audit', icon: FileText },
+    { name: 'Career Path', href: '/career-path', icon: Target },
+    { name: 'Roadmap', href: '/roadmap', icon: Map },
+    { name: 'Projects', href: '/projects', icon: FolderOpen },
+    { name: 'Mentor Chat', href: '/mentor', icon: MessageCircle },
+    { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
   return (
     <motion.div
       className={cn(
-        'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300',
+        'bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border-r border-surface-200/50 dark:border-surface-700/30 flex flex-col transition-all duration-300',
         collapsed ? 'w-16' : 'w-64'
       )}
       animate={{ width: collapsed ? 64 : 256 }}
     >
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-b border-surface-200/50 dark:border-surface-700/30">
         <div className="flex items-center justify-between">
           {!collapsed && (
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
                 <span className="text-white font-bold text-sm">S</span>
               </div>
-              <span className="font-display font-bold text-xl text-gray-900 dark:text-white">
+              <span className="font-display font-bold text-xl text-surface-900 dark:text-white">
                 SkillSync
               </span>
             </Link>
@@ -83,18 +76,17 @@ const Sidebar = () => {
           
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-colors"
           >
             {collapsed ? (
-              <ChevronRight size={20} className="text-gray-600 dark:text-gray-400" />
+              <ChevronRight size={20} className="text-surface-500 dark:text-surface-400" />
             ) : (
-              <ChevronLeft size={20} className="text-gray-600 dark:text-gray-400" />
+              <ChevronLeft size={20} className="text-surface-500 dark:text-surface-400" />
             )}
           </button>
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navigation.map((item) => {
@@ -106,10 +98,10 @@ const Sidebar = () => {
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors relative',
+                    'flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative',
                     isActive
-                      ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 shadow-sm'
+                      : 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-700/50 hover:text-surface-900 dark:hover:text-surface-100'
                   )}
                 >
                   <Icon size={20} className="flex-shrink-0" />
@@ -119,7 +111,7 @@ const Sidebar = () => {
                   
                   {isActive && (
                     <motion.div
-                      className="absolute left-0 top-0 bottom-0 w-1 bg-primary-600 rounded-r-full"
+                      className="absolute left-0 top-1 bottom-1 w-1 bg-emerald-500 rounded-r-full"
                       layoutId="activeIndicator"
                     />
                   )}
@@ -130,17 +122,39 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      {/* Footer */}
+      {collapsed && (
+        <div className="flex justify-center py-3 border-t border-surface-200/50 dark:border-surface-700/30">
+          <div className={`w-2 h-2 rounded-full ${
+            aiStatus.mode === 'checking' ? 'bg-surface-400 animate-pulse' :
+            aiStatus.mode === 'full' ? 'bg-emerald-500' :
+            'bg-red-500'
+          }`} title={aiStatus.label} />
+        </div>
+      )}
+
       {!collapsed && (
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg p-3 text-white text-sm">
-            <p className="font-medium mb-1">Upgrade to Pro</p>
-            <p className="text-primary-100 text-xs mb-2">
-              Unlock unlimited AI chats and advanced features
-            </p>
-            <button className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1 rounded transition-colors">
-              Learn More
-            </button>
+        <div className="border-t border-surface-200/50 dark:border-surface-700/30">
+          <div className="px-4 py-2 flex items-center space-x-2">
+            <div className={`w-2 h-2 rounded-full ${
+              aiStatus.mode === 'checking' ? 'bg-surface-400 animate-pulse' :
+              aiStatus.mode === 'full' ? 'bg-emerald-500' :
+              'bg-red-500'
+            }`} />
+            <span className="text-xs text-surface-500 dark:text-surface-400">{aiStatus.label}</span>
+            {aiStatus.mode !== 'full' && aiStatus.mode !== 'checking' && (
+              <AlertTriangle size={12} className="text-amber-500" />
+            )}
+          </div>
+          <div className="p-4 pt-2">
+            <div className="bg-gradient-to-br from-emerald-600 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+              <p className="font-semibold text-sm mb-1">Upgrade to Pro</p>
+              <p className="text-emerald-100/80 text-xs mb-3 leading-relaxed">
+                Unlock unlimited AI chats and advanced features
+              </p>
+              <Link href="/plans" className="inline-block bg-white/20 hover:bg-white/30 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur-sm transition-all">
+                Learn More
+              </Link>
+            </div>
           </div>
         </div>
       )}

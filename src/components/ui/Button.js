@@ -20,9 +20,9 @@ const Button = forwardRef(({
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus-ring disabled:opacity-50 disabled:cursor-not-allowed'
   
   const variants = {
-    primary: 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl',
-    secondary: 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600 shadow-md hover:shadow-lg',
-    ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300',
+    primary: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg hover:shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30',
+    secondary: 'bg-white dark:bg-surface-800/80 hover:bg-surface-50 dark:hover:bg-surface-700/80 text-surface-900 dark:text-surface-100 border border-surface-200 dark:border-surface-600/50 shadow-md hover:shadow-lg',
+    ghost: 'bg-transparent hover:bg-surface-100 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300',
     danger: 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl',
     success: 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl',
   }

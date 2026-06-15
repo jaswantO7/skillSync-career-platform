@@ -109,10 +109,11 @@ router.post('/update', authMiddleware, validate(schemas.updateProgress), async (
       data: progress
     });
   } catch (error) {
-    console.error('Update progress error:', error);
+    console.error('Update progress error:', error.message || error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update progress'
+      message: 'Failed to update progress',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
