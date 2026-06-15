@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Sun, Moon, User, LogOut } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
+import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
@@ -14,6 +15,7 @@ const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const { user, userProfile, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const router = useRouter()
 
   const avatarGradients = {
     sunset: 'from-orange-500 to-pink-500',
@@ -36,6 +38,7 @@ const Navbar = () => {
   const handleLogout = async () => {
     await logout()
     setShowUserMenu(false)
+    router.push('/auth/signin')
   }
 
   return (
