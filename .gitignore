@@ -8,6 +8,7 @@ tmp/
 temp/
 .tmp
 .temp
+.planning
 
 # ----------------------------------
 # Next.js build folders

@@ -34,9 +34,11 @@ const validate = (schema) => {
 // Validation schemas
 const schemas = {
   updateUser: Joi.object({
-    name: Joi.string().min(2).max(50).required(),
+    name: Joi.string().min(2).max(50),
     currentRole: Joi.string().max(100).allow(''),
     role: Joi.string().max(100),
+    experienceYears: Joi.number().min(0).max(50),
+    skills: Joi.array().items(Joi.string()),
     selectedCareerPath: Joi.object({
       targetRole: Joi.string(),
       requiredSkills: Joi.array().items(Joi.string()),

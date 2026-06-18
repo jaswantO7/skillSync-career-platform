@@ -12,6 +12,8 @@ const userRoutes = require('./routes/userRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const progressRoutes = require('./routes/progressRoutes');
 const projectRoutes = require('./routes/projectRoutes');
+const { router: stripeRouter, webhookRouter: stripeWebhookRouter } = require('./routes/stripeRoutes');
+const resetRoutes = require('./routes/resetRoutes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -43,6 +45,9 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
+
+// Stripe webhook — must be before JSON body parser
+app.use('/api/stripe/webhook', stripeWebhookRouter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -78,10 +83,12 @@ app.get(['/health', '/api/health'], (req, res) => {
 });
 
 // API routes
+app.use('/api/stripe', stripeRouter);
 app.use('/api/user', userRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/dev', resetRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  Send, 
-  Bot, 
-  User, 
-  Lightbulb, 
-  Target, 
-  TrendingUp, 
+  Send,
+  Bot,
+  User,
+  Lightbulb,
+  Target,
+  TrendingUp,
   MessageCircle,
   Sparkles,
   Clock,
@@ -21,7 +21,8 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import { aiAPI } from '@/lib/api'
+import UsageBar from '@/components/plans/UsageBar'
+import { aiAPI, authAPI } from '@/lib/api'
 import { formatDateTime } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -31,6 +32,7 @@ const MentorPage = () => {
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [usage, setUsage] = useState(null)
   const messagesEndRef = useRef(null)
   const fetchedRef = useRef(false)
   const { user, userProfile, getAuthToken, loading: authLoading } = useAuth()
@@ -43,10 +45,14 @@ const MentorPage = () => {
     { icon: MessageCircle, title: 'Networking', message: 'How can I build a stronger professional network?' },
   ]
 
+  const chatLimit = userProfile?.subscriptionPlan === 'free' ? 5 : Infinity
+  const hasReachedLimit = (usage?.mentorChats || 0) >= chatLimit
+
   useEffect(() => {
     if (authLoading || !user || fetchedRef.current) return
     fetchedRef.current = true
     initializeChat()
+    fetchUsage()
     scrollToBottom()
   }, [user, authLoading])
 
@@ -89,12 +95,30 @@ const MentorPage = () => {
     }
   }
 
+  const fetchUsage = async () => {
+    try {
+      const res = await authAPI.getUsage()
+      if (res.data?.success) {
+        setUsage(res.data.data)
+      }
+    } catch {
+      // non-critical
+    }
+  }
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const handleSendMessage = async (messageText = inputMessage) => {
     if (!messageText.trim() || isTyping) return
+
+    const chatLimit = userProfile?.subscriptionPlan === 'free' ? 5 : Infinity
+    const chatsUsed = usage?.mentorChats || 0
+    if (chatsUsed >= chatLimit) {
+      toast.error('You have reached your monthly chat limit. Upgrade to Pro for unlimited chats.')
+      return
+    }
 
     const userMessage = {
       id: Date.now(),
@@ -124,6 +148,7 @@ const MentorPage = () => {
             timestamp: response.data.data.timestamp || new Date().toISOString()
           }])
           setIsTyping(false)
+          fetchUsage()
           return
         }
       } catch (e) {
@@ -145,6 +170,7 @@ const MentorPage = () => {
         timestamp: new Date().toISOString()
       }])
       setIsTyping(false)
+      fetchUsage()
 
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -158,7 +184,7 @@ const MentorPage = () => {
   }
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !hasReachedLimit) {
       e.preventDefault()
       handleSendMessage()
     }
@@ -182,21 +208,27 @@ const MentorPage = () => {
     <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <DashboardHeader />
         
         <main className="flex-1 flex overflow-hidden">
           <div className="flex-1 flex flex-col">
             {userProfile?.subscriptionPlan === 'free' && (
-              <div className="bg-gradient-to-r from-emerald-600 to-violet-600 px-4 py-2">
-                <div className="flex items-center justify-between text-white text-sm">
+              <div className="bg-gradient-to-r from-emerald-600 to-violet-600 px-4 py-3">
+                <div className="flex items-start sm:items-center justify-between text-white text-sm mb-2 gap-2">
                   <div className="flex items-center space-x-2">
                     <Zap size={16} className="fill-yellow-300 text-yellow-300" />
-                    <span>Free plan: 5 mentor chats/month</span>
+                    <span>Free plan: {usage?.mentorChats || 0}/5 mentor chats used this month</span>
                   </div>
-                  <Link href="/plans" className="text-xs font-medium underline underline-offset-2 hover:no-underline">
+                  <Link href="/plans" className="text-xs font-medium underline underline-offset-2 hover:no-underline shrink-0 ml-2">
                     Upgrade to Pro
                   </Link>
+                </div>
+                <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-white rounded-full transition-all"
+                    style={{ width: `${Math.min(((usage?.mentorChats || 0) / 5) * 100, 100)}%` }}
+                  />
                 </div>
               </div>
             )}
@@ -237,7 +269,7 @@ const MentorPage = () => {
                     transition={{ duration: 0.3 }}
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`flex items-start space-x-3 max-w-3xl ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    <div className={`flex items-start space-x-3 max-w-[85%] sm:max-w-3xl ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${
                         message.type === 'user'
                           ? 'bg-emerald-600'
@@ -300,7 +332,7 @@ const MentorPage = () => {
                 <p className="text-sm text-surface-500 dark:text-surface-400 mb-3">
                   Quick questions to get started:
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {quickPrompts.map((prompt, index) => {
                     const Icon = prompt.icon
                     return (
@@ -308,7 +340,7 @@ const MentorPage = () => {
                         key={index}
                         onClick={() => handleQuickPrompt(prompt)}
                         className="flex items-center space-x-2 p-3 bg-surface-100 dark:bg-surface-800/50 hover:bg-surface-200 dark:hover:bg-surface-700/50 rounded-xl text-left transition-all"
-                        disabled={isTyping}
+                        disabled={isTyping || hasReachedLimit}
                       >
                         <Icon className="w-4 h-4 text-emerald-600" />
                         <span className="text-sm text-surface-700 dark:text-surface-300">
@@ -321,6 +353,16 @@ const MentorPage = () => {
               </div>
             )}
 
+            {hasReachedLimit ? (
+              <div className="glass border-t border-surface-200/50 dark:border-surface-700/30 p-6 text-center">
+                <Zap size={24} className="text-yellow-500 mx-auto mb-2" />
+                <p className="text-surface-900 dark:text-white font-medium mb-1">Monthly chat limit reached</p>
+                <p className="text-sm text-surface-500 dark:text-surface-400 mb-4">Upgrade to Pro for unlimited mentor conversations.</p>
+                <Link href="/plans">
+                  <Button size="sm">Upgrade to Pro</Button>
+                </Link>
+              </div>
+            ) : (
             <div className="glass border-t border-surface-200/50 dark:border-surface-700/30 p-4">
               <div className="flex items-end space-x-3">
                 <div className="flex-1">
@@ -332,12 +374,12 @@ const MentorPage = () => {
                     rows={1}
                     className="w-full px-4 py-3 rounded-xl border border-surface-200 dark:border-surface-600/50 bg-white dark:bg-surface-800/60 text-surface-900 dark:text-surface-100 placeholder-surface-400 dark:placeholder-surface-500 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all duration-200 resize-none backdrop-blur-sm"
                     style={{ minHeight: '48px', maxHeight: '120px' }}
-                    disabled={isTyping}
+                    disabled={isTyping || hasReachedLimit}
                   />
                 </div>
                 <Button
                   onClick={() => handleSendMessage()}
-                  disabled={!inputMessage.trim() || isTyping}
+                  disabled={!inputMessage.trim() || isTyping || hasReachedLimit}
                   className="px-4 py-3"
                 >
                   <Send size={20} />
@@ -347,6 +389,7 @@ const MentorPage = () => {
                 Press Enter to send, Shift+Enter for new line
               </p>
             </div>
+            )}
           </div>
 
           <div className="w-80 bg-white/50 dark:bg-surface-900/50 backdrop-blur-xl border-l border-surface-200/50 dark:border-surface-700/30 p-4 overflow-y-auto hidden lg:block">
@@ -393,6 +436,15 @@ const MentorPage = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-surface-500 dark:text-surface-400">Current Streak</span>
                       <span className="font-semibold text-surface-900 dark:text-white">{stats?.streak?.current || 0} days</span>
+                    </div>
+                    <div className="pt-3 border-t border-surface-200 dark:border-surface-700">
+                      <p className="text-xs font-medium text-surface-500 dark:text-surface-400 mb-2">Monthly Usage</p>
+                      <UsageBar
+                        label="Mentor Chat"
+                        used={usage?.mentorChats || 0}
+                        limit={userProfile?.subscriptionPlan === 'free' ? 5 : Infinity}
+                        icon={MessageCircle}
+                      />
                     </div>
                   </div>
                 </CardContent>

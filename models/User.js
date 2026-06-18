@@ -24,6 +24,16 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    skills: [String],
+    experienceYears: {
+      type: Number,
+      default: 0,
+    },
+    userType: {
+      type: String,
+      enum: ["learner", "mentor", "admin"],
+      default: "learner",
+    },
     role: {
       type: String,
       trim: true,
@@ -34,6 +44,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["free", "pro", "enterprise"],
       default: "free",
+    },
+    stripeCustomerId: {
+      type: String,
+      trim: true,
     },
     selectedCareerPath: {
       targetRole: String,

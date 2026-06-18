@@ -1,5 +1,7 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/authMiddleware');
+const { checkUsageLimit } = require('../middleware/planEnforcer');
+const Usage = require('../models/Usage');
 const Project = require('../models/Project');
 
 const router = express.Router();
@@ -26,9 +28,9 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Start a project (save to DB)
-router.post('/start', authMiddleware, async (req, res) => {
+router.post('/start', authMiddleware, checkUsageLimit('projectsStarted'), async (req, res) => {
   try {
-    const { title, description, objective, difficulty, estimatedDuration, skillsUsed, technologies, deliverables, learningObjectives, portfolioValue, realWorldApplication } = req.body;
+    const { title, description, objective, difficulty, estimatedDuration, skillsUsed, technologies, deliverables, learningObjectives, portfolioValue, realWorldApplication, targetRole, roadmapId } = req.body;
 
     const project = new Project({
       userId: req.user._id,
@@ -48,11 +50,14 @@ router.post('/start', authMiddleware, async (req, res) => {
       learningObjectives: learningObjectives || [],
       portfolioValue: portfolioValue || '',
       realWorldApplication: realWorldApplication || '',
+      targetRole,
+      roadmapId,
       status: 'in_progress',
       startDate: new Date()
     });
 
     await project.save();
+    await Usage.increment(req.user._id, 'projectsStarted')
 
     res.json({
       success: true,

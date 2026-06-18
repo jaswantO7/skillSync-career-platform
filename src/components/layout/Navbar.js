@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Sun, Moon, User, LogOut } from 'lucide-react'
@@ -16,6 +16,17 @@ const Navbar = () => {
   const { user, userProfile, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const router = useRouter()
+  const userMenuRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const avatarGradients = {
     sunset: 'from-orange-500 to-pink-500',
@@ -38,16 +49,15 @@ const Navbar = () => {
   const handleLogout = async () => {
     await logout()
     setShowUserMenu(false)
-    router.push('/auth/signin')
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-surface-950/70 backdrop-blur-2xl border-b border-surface-200/10 dark:border-surface-700/10 shadow-lg shadow-surface-900/10 dark:shadow-white/10 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-white/[0.05] backdrop-blur-2xl border-b border-surface-200/10 dark:border-white/10 shadow-lg shadow-surface-900/10 dark:shadow-white/5 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-2">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2.5 group">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/30 transition-shadow">
+            <div className="w-8 h-8 bg-gradient-to-br from-stitch-primary to-stitch-secondary rounded-lg flex items-center justify-center shadow-lg shadow-stitch-primary/20 group-hover:shadow-stitch-primary/30 transition-shadow">
               <span className="text-white font-bold text-sm">S</span>
             </div>
             <span className="font-display font-bold text-xl text-surface-900 dark:text-white">
@@ -61,7 +71,7 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-surface-600 dark:text-surface-400 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium text-sm transition-colors duration-200"
+                className="text-surface-600 dark:text-white/70 hover:text-stitch-primary dark:hover:text-stitch-primary-fixed font-medium text-sm transition-colors duration-200"
               >
                 {item.name}
               </Link>
@@ -73,23 +83,23 @@ const Navbar = () => {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 rounded-lg flex items-center justify-center text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-800 transition-all"
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-surface-500 dark:text-white/50 hover:text-surface-900 dark:hover:text-white hover:bg-surface-100 dark:hover:bg-white/10 transition-all"
             >
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
             {user ? (
-              <div className="relative">
+              <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800 transition-all"
+                  className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-xl hover:bg-surface-100 dark:hover:bg-white/10 transition-all"
                 >
-                  <div className={`w-7 h-7 rounded-full bg-gradient-to-br ${avatarGradients[userProfile?.profile?.avatar] || 'from-emerald-500 to-violet-600'} flex items-center justify-center shadow-sm`}>
+                  <div className={`w-7 h-7 rounded-full bg-gradient-to-br ${avatarGradients[userProfile?.profile?.avatar] || 'from-stitch-primary to-stitch-secondary'} flex items-center justify-center shadow-sm`}>
                     <span className="text-white text-xs font-semibold">
                       {userProfile?.name?.charAt(0) || user.email?.charAt(0)?.toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-surface-700 dark:text-surface-300">
+                  <span className="text-sm font-medium text-surface-700 dark:text-white/80">
                     {userProfile?.name || user.displayName || 'User'}
                   </span>
                 </button>
@@ -97,7 +107,7 @@ const Navbar = () => {
                 <AnimatePresence>
                   {showUserMenu && (
                     <motion.div
-                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-1.5"
+                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-surface-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-1.5 z-[60]"
                       initial={{ opacity: 0, scale: 0.95, y: -10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -105,7 +115,7 @@ const Navbar = () => {
                     >
                       <Link
                         href="/dashboard"
-                        className="flex items-center space-x-2 px-4 py-2.5 text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50"
+                        className="flex items-center space-x-2 px-4 py-2.5 text-sm text-surface-700 dark:text-white/80 hover:bg-surface-50 dark:hover:bg-white/10"
                         onClick={() => setShowUserMenu(false)}
                       >
                         <User size={15} />
@@ -113,7 +123,7 @@ const Navbar = () => {
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center space-x-2 w-full px-4 py-2.5 text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50"
+                        className="flex items-center space-x-2 w-full px-4 py-2.5 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700/50"
                       >
                         <LogOut size={15} />
                         <span>Sign Out</span>
@@ -142,13 +152,13 @@ const Navbar = () => {
           <div className="md:hidden flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 rounded-lg flex items-center justify-center text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-800 transition-all"
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-surface-500 dark:text-white/50 hover:text-surface-900 dark:hover:text-white hover:bg-surface-100 dark:hover:bg-white/10 transition-all"
             >
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="w-9 h-9 rounded-lg flex items-center justify-center text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-800 transition-all"
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-surface-500 dark:text-white/50 hover:text-surface-900 dark:hover:text-white hover:bg-surface-100 dark:hover:bg-white/10 transition-all"
             >
               {isOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -160,7 +170,7 @@ const Navbar = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="md:hidden bg-white dark:bg-surface-900 border-t border-surface-200 dark:border-surface-700"
+            className="md:hidden bg-white/70 dark:bg-white/[0.05] backdrop-blur-2xl border-t border-surface-200 dark:border-white/10"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -171,7 +181,7 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block text-surface-700 dark:text-surface-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium py-2 transition-colors"
+                  className="block text-surface-700 dark:text-white/70 hover:text-stitch-primary dark:hover:text-stitch-primary-fixed font-medium py-2 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}

@@ -15,7 +15,9 @@ import {
   Palette,
   Database,
   Globe,
-  Filter
+  Filter,
+  ChevronDown,
+  Map
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
@@ -39,9 +41,17 @@ const ProjectsPage = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [deliverableForm, setDeliverableForm] = useState({ url: '', notes: '' })
   const [submittingDeliverable, setSubmittingDeliverable] = useState(false)
+  const [showRoadmapPicker, setShowRoadmapPicker] = useState(false)
+  const [selectedRoadmapId, setSelectedRoadmapId] = useState(null)
   const { user, userProfile, getAuthToken, loading: authLoading } = useAuth()
-  const { completeDeliverable, addActivity, roadmap } = useProgress()
+  const { completeDeliverable, addActivity, roadmap, roadmaps } = useProgress()
   const fetchedRef = useRef(false)
+
+  const projectRoadmap = selectedRoadmapId
+    ? roadmaps.find(r => r._id === selectedRoadmapId)
+    : roadmap
+  const roadmapSkills = projectRoadmap?.monthlyPlans?.flatMap(p => p.skills).filter(Boolean) || []
+  const projectTargetRole = projectRoadmap?.targetRole || userProfile?.selectedCareerPath?.targetRole || userProfile?.currentRole || 'Software Engineer'
 
   useEffect(() => {
     if (authLoading || !user || fetchedRef.current) return
@@ -49,9 +59,19 @@ const ProjectsPage = () => {
     fetchProjects()
   }, [user, authLoading])
 
-  const fetchProjects = async () => {
+  const getRoadmapForPick = (pickId) => {
+    return pickId ? roadmaps.find(r => r._id === pickId) : roadmap
+  }
+
+  const fetchProjects = async (pickerRoadmapId) => {
     try {
       setLoading(true)
+
+      const effectiveRoadmap = pickerRoadmapId !== undefined
+        ? getRoadmapForPick(pickerRoadmapId)
+        : projectRoadmap
+      const effectiveSkills = effectiveRoadmap?.monthlyPlans?.flatMap(p => p.skills).filter(Boolean) || []
+      const effectiveTargetRole = effectiveRoadmap?.targetRole || userProfile?.selectedCareerPath?.targetRole || userProfile?.currentRole || 'Software Engineer'
 
       // 1. Fetch saved started projects from DB
       let savedProjects = []
@@ -65,13 +85,12 @@ const ProjectsPage = () => {
       }
 
       // 2. Get AI suggestions (not saved to DB)
-      const roadmapSkills = roadmap?.monthlyPlans?.flatMap(p => p.skills).filter(Boolean) || []
       let suggestions = []
       try {
         const token = await getAuthToken()
         const response = await aiAPI.suggestProjects({
-          targetRole: roadmap?.targetRole || userProfile?.selectedCareerPath?.targetRole || userProfile?.currentRole || 'Software Engineer',
-          skills: [...new Set([...(userProfile?.skills || []), ...roadmapSkills])],
+          targetRole: effectiveTargetRole,
+          skills: [...new Set([...(userProfile?.skills || []), ...effectiveSkills])],
           difficultyLevel: 'intermediate'
         })
         if (response.data?.success && response.data?.data?.projects?.length) {
@@ -121,6 +140,8 @@ const ProjectsPage = () => {
         learningObjectives: project.learningObjectives,
         portfolioValue: project.portfolioValue,
         realWorldApplication: project.realWorldApplication,
+        targetRole: projectTargetRole,
+        roadmapId: projectRoadmap?._id,
       })
 
       // Replace suggestion with saved project
@@ -144,10 +165,9 @@ const ProjectsPage = () => {
 
   const handleRequestNewProject = async () => {
     try {
-      const roadmapSkills = roadmap?.monthlyPlans?.flatMap(p => p.skills).filter(Boolean) || []
       const token = await getAuthToken()
       const response = await aiAPI.suggestProjects({
-        targetRole: roadmap?.targetRole || userProfile?.selectedCareerPath?.targetRole || userProfile?.currentRole || 'Software Engineer',
+        targetRole: projectTargetRole,
         skills: [...new Set([...(userProfile?.skills || []), ...roadmapSkills])],
         difficultyLevel: 'intermediate',
         _refresh: Date.now() // bust cache
@@ -312,10 +332,10 @@ const ProjectsPage = () => {
     <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <DashboardHeader />
         
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-2">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <motion.div
@@ -372,6 +392,53 @@ const ProjectsPage = () => {
               </div>
             </motion.div>
 
+            {/* Roadmap selector */}
+            {roadmaps?.length > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.12 }}
+                className="mb-6"
+              >
+                <div className="flex items-center space-x-3">
+                  <Map className="w-5 h-5 text-surface-500" />
+                  <span className="text-sm text-surface-600 dark:text-surface-400">Base projects on:</span>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowRoadmapPicker(!showRoadmapPicker)}
+                      className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-sm text-surface-700 dark:text-surface-300 transition-all"
+                    >
+                      <span>{projectRoadmap?.title || 'Default (Active Roadmap)'}</span>
+                      <ChevronDown size={14} className={`transition-transform ${showRoadmapPicker ? 'rotate-180' : ''}`} />
+                    </button>
+                    {showRoadmapPicker && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setShowRoadmapPicker(false)} />
+                        <div className="absolute left-0 mt-1 w-64 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 z-20 py-1">
+                          <button
+                            onClick={() => { setSelectedRoadmapId(null); setShowRoadmapPicker(false); fetchProjects(null) }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-50 dark:hover:bg-surface-700/50 ${!selectedRoadmapId ? 'bg-emerald-50 dark:bg-emerald-900/20 font-medium' : ''}`}
+                          >
+                            Default (Active Roadmap)
+                          </button>
+                          {roadmaps.filter(r => r.status !== 'abandoned').map(r => (
+                            <button
+                              key={r._id}
+                              onClick={() => { setSelectedRoadmapId(r._id); setShowRoadmapPicker(false); fetchProjects(r._id) }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-50 dark:hover:bg-surface-700/50 ${selectedRoadmapId === r._id ? 'bg-emerald-50 dark:bg-emerald-900/20 font-medium' : ''}`}
+                            >
+                              <div className="text-surface-900 dark:text-white">{r.title}</div>
+                              <div className="text-xs text-surface-500 dark:text-surface-400">{r.targetRole}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Projects Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredProjects.map((project, index) => (
@@ -381,7 +448,7 @@ const ProjectsPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
                 >
-                  <Card className="h-full hover:shadow-lg transition-all duration-200">
+                  <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-200">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center space-x-3">
@@ -407,7 +474,7 @@ const ProjectsPage = () => {
                       </div>
                     </CardHeader>
                     
-                    <CardContent>
+                    <CardContent className="flex-1 flex flex-col">
                       <p className="text-surface-600 dark:text-surface-400 text-sm mb-4 line-clamp-3">
                         {project.description || 'No description available'}
                       </p>
@@ -494,6 +561,9 @@ const ProjectsPage = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* Spacer */}
+                      <div className="flex-1" />
 
                       {/* Actions */}
                       <div className="flex space-x-2">

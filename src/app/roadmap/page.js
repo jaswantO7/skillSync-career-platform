@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
   Calendar, 
@@ -19,7 +20,8 @@ import {
   Users,
   Flame,
   DollarSign,
-  Sparkles
+  Sparkles,
+  ChevronDown
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
@@ -32,19 +34,35 @@ import Badge from '@/components/ui/Badge'
 import { aiAPI, progressAPI } from '@/lib/api'
 import toast from 'react-hot-toast'
 
-const RoadmapPage = () => {
+const RoadmapContent = () => {
   const [roadmap, setRoadmap] = useState(null)
   const [loading, setLoading] = useState(true)
   const [completingResource, setCompletingResource] = useState(null)
+  const [showRoadmapPicker, setShowRoadmapPicker] = useState(false)
+  const [switchingRoadmap, setSwitchingRoadmap] = useState(false)
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, userProfile, getAuthToken, loading: authLoading } = useAuth()
-  const { completeResource, addActivity, progress, roadmap: contextRoadmap, fetchUserProgress, loading: progressLoading } = useProgress()
+  const { completeResource, addActivity, progress, roadmaps, roadmap: contextRoadmap, fetchUserProgress, switchRoadmap, loading: progressLoading } = useProgress()
   const fetchedRef = useRef(false)
 
   useEffect(() => {
     if (authLoading || !user || fetchedRef.current || progressLoading) return
     fetchedRef.current = true
-    fetchRoadmap()
+
+    const urlId = searchParams.get('id')
+    if (urlId && urlId !== contextRoadmap?._id) {
+      switchRoadmap(urlId)
+    } else {
+      fetchRoadmap()
+    }
   }, [user, authLoading, progressLoading])
+
+  // Sync with context when roadmap switches
+  useEffect(() => {
+    if (contextRoadmap) setRoadmap(contextRoadmap)
+    setSwitchingRoadmap(false)
+  }, [contextRoadmap])
 
   const fetchRoadmap = async () => {
     try {
@@ -345,10 +363,10 @@ const RoadmapPage = () => {
     <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <DashboardHeader />
         
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-2">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <motion.div
@@ -357,12 +375,72 @@ const RoadmapPage = () => {
               transition={{ duration: 0.6 }}
               className="mb-8"
             >
-              <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
-                {roadmap.title || `Path to ${roadmap.targetRole}`}
-              </h1>
-              <p className="text-surface-600 dark:text-surface-400">
-                Your personalized {roadmap.duration?.months || 6}-month learning journey to {roadmap.targetRole}
-              </p>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+                    {roadmap.title || `Path to ${roadmap.targetRole}`}
+                  </h1>
+                  <p className="text-surface-600 dark:text-surface-400">
+                    Your personalized {roadmap.duration?.months || 6}-month learning journey to {roadmap.targetRole}
+                  </p>
+                </div>
+
+                {roadmaps?.length > 1 && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowRoadmapPicker(!showRoadmapPicker)}
+                      disabled={switchingRoadmap}
+                      className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-sm text-surface-700 dark:text-surface-300 transition-all disabled:opacity-50"
+                    >
+                      {switchingRoadmap ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-surface-400 border-t-transparent rounded-full animate-spin" />
+                          <span>Switching...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Switch Roadmap</span>
+                          <ChevronDown size={16} className={`transition-transform ${showRoadmapPicker ? 'rotate-180' : ''}`} />
+                        </>
+                      )}
+                    </button>
+                    {showRoadmapPicker && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setShowRoadmapPicker(false)} />
+                        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 z-20 py-2 max-h-80 overflow-y-auto">
+                          {roadmaps.filter(r => r.status !== 'abandoned').map(r => (
+                            <button
+                              key={r._id}
+                              onClick={() => {
+                                setSwitchingRoadmap(true)
+                                router.push(`/roadmap?id=${r._id}`, { scroll: false })
+                                switchRoadmap(r._id)
+                                setShowRoadmapPicker(false)
+                              }}
+                              className={`w-full text-left px-4 py-3 hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-all ${
+                                r._id === roadmap._id ? 'bg-emerald-50 dark:bg-emerald-900/20 border-l-2 border-emerald-500' : ''
+                              }`}
+                            >
+                              <div className="text-sm font-medium text-surface-900 dark:text-white">{r.title}</div>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <span className="text-xs text-surface-500 dark:text-surface-400">{r.targetRole}</span>
+                                <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                  r.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                  r.status === 'paused' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                  'bg-surface-100 text-surface-600 dark:bg-surface-700 dark:text-surface-400'
+                                }`}>{r.status}</span>
+                              </div>
+                              <div className="mt-1.5 h-1 bg-surface-200 dark:bg-surface-700 rounded-full overflow-hidden">
+                                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${r.overallProgress || 0}%` }} />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </motion.div>
 
             {/* Progress Overview */}
@@ -614,4 +692,14 @@ const RoadmapPage = () => {
   )
 }
 
-export default RoadmapPage
+export default function RoadmapPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-surface-50 dark:bg-surface-950 items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <RoadmapContent />
+    </Suspense>
+  )
+}

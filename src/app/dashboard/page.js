@@ -15,26 +15,66 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
+import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/dashboard/Sidebar'
 import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import ProgressCard from '@/components/dashboard/ProgressCard'
 import CareerSummary from '@/components/dashboard/CareerSummary'
+import UsageBar from '@/components/plans/UsageBar'
+import GettingStarted from '@/components/dashboard/GettingStarted'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Progress from '@/components/ui/Progress'
 import Badge from '@/components/ui/Badge'
+import { authAPI } from '@/lib/api'
 import Link from 'next/link'
+import { MessageCircle, Map, Folder } from 'lucide-react'
+
+const PLAN_LIMITS = {
+  free: { maxMentorChatsPerMonth: 5, maxCareerRecommendations: Infinity, maxRoadmaps: 1, maxProjects: 3 },
+  pro: { maxMentorChatsPerMonth: Infinity, maxCareerRecommendations: Infinity, maxRoadmaps: Infinity, maxProjects: Infinity },
+  enterprise: { maxMentorChatsPerMonth: Infinity, maxCareerRecommendations: Infinity, maxRoadmaps: Infinity, maxProjects: Infinity },
+}
 
 const Dashboard = () => {
-  const { user, userProfile } = useAuth()
-  const { progress, roadmap, projects, stats, loading } = useProgress()
+  const { user, userProfile, loading: authLoading } = useAuth()
+  const { progress, roadmap, roadmaps, projects, stats, loading } = useProgress()
+  const router = useRouter()
   const [recentActivity, setRecentActivity] = useState([])
+  const [usage, setUsage] = useState(null)
+  const [showGettingStarted, setShowGettingStarted] = useState(true)
+
+  useEffect(() => {
+    try {
+      const hidden = localStorage.getItem('gs_hidden')
+      if (hidden === 'true') setShowGettingStarted(false)
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) { router.push('/auth/signin'); return }
+    if (userProfile && !userProfile.onboardingCompleted) {
+      router.push('/onboarding')
+    }
+  }, [user, userProfile, authLoading])
 
   useEffect(() => {
     if (progress?.recentActivity) {
       setRecentActivity(progress.recentActivity.slice(0, 5))
     }
   }, [progress])
+
+  useEffect(() => {
+    if (authLoading || !user) return
+    const fetchUsage = async () => {
+      try {
+        const res = await authAPI.getUsage()
+        if (res.data?.success) setUsage(res.data.data)
+      } catch { /* non-critical */ }
+    }
+    fetchUsage()
+  }, [user, authLoading])
 
   const quickActions = [
     { title: 'Upload Resume', description: 'Get AI-powered skill analysis', href: '/skill-audit', icon: BookOpen, gradient: 'from-emerald-500 to-emerald-600' },
@@ -61,10 +101,10 @@ const Dashboard = () => {
     <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <DashboardHeader />
         
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-2">
           <div className="max-w-7xl mx-auto space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -72,7 +112,7 @@ const Dashboard = () => {
               transition={{ duration: 0.6 }}
             >
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2">
                   Welcome back, {userProfile?.name || user?.displayName || 'there'}!
                 </h1>
                 <p className="text-surface-500 dark:text-surface-400">
@@ -80,6 +120,19 @@ const Dashboard = () => {
                 </p>
               </div>
             </motion.div>
+
+            <GettingStarted
+              visible={showGettingStarted}
+              roadmaps={roadmaps}
+              projects={projects}
+              usage={usage}
+              hasAnalysis={(userProfile?.skills?.length || 0) > 0 || (stats?.totalSkills || 0) > 0}
+              onToggle={() => {
+                const next = !showGettingStarted
+                setShowGettingStarted(next)
+                localStorage.setItem('gs_hidden', String(!next))
+              }}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
@@ -174,6 +227,22 @@ const Dashboard = () => {
               </div>
 
               <div className="space-y-6">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.75 }}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Monthly Usage</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <UsageBar label="Mentor Chat" used={usage?.mentorChats || 0} limit={PLAN_LIMITS[userProfile?.subscriptionPlan || 'free'].maxMentorChatsPerMonth} icon={MessageCircle} />
+                        <UsageBar label="Career Paths" used={usage?.careerPathsGenerated || 0} limit={PLAN_LIMITS[userProfile?.subscriptionPlan || 'free'].maxCareerRecommendations} icon={Target} />
+                        <UsageBar label="Roadmaps" used={usage?.roadmapsGenerated || 0} limit={PLAN_LIMITS[userProfile?.subscriptionPlan || 'free'].maxRoadmaps} icon={Map} />
+                        <UsageBar label="Projects" used={usage?.projectsStarted || 0} limit={PLAN_LIMITS[userProfile?.subscriptionPlan || 'free'].maxProjects} icon={Folder} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.8 }}>
                   <Card>
                     <CardHeader>
@@ -236,6 +305,7 @@ const Dashboard = () => {
                     </CardContent>
                   </Card>
                 </motion.div>
+
               </div>
             </div>
           </div>

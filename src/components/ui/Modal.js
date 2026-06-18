@@ -63,9 +63,9 @@ const Modal = ({
           />
           
           {/* Modal */}
-          <motion.div
+            <motion.div
             className={cn(
-              'relative w-full glass-card rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700 max-h-[90vh] overflow-hidden',
+              'relative w-full bg-white dark:bg-surface-800/95 rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700 max-h-[90vh] overflow-hidden',
               sizes[size],
               className
             )}

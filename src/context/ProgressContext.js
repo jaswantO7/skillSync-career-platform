@@ -19,6 +19,8 @@ export const ProgressProvider = ({ children }) => {
   const { user, getAuthToken } = useAuth()
   const [progress, setProgress] = useState(null)
   const [roadmap, setRoadmap] = useState(null)
+  const [roadmaps, setRoadmaps] = useState([])
+  const [activeRoadmapId, setActiveRoadmapId] = useState(null)
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({
@@ -46,11 +48,29 @@ export const ProgressProvider = ({ children }) => {
       const data = response.data.data
       setProgress(data.progress)
       setRoadmap(data.activeRoadmap)
+      setRoadmaps(data.allRoadmaps || [])
+      setActiveRoadmapId(data.activeRoadmap?._id || null)
       setProjects(data.activeProjects || [])
     } catch (error) {
       console.error('Fetch progress error:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const switchRoadmap = async (roadmapId) => {
+    try {
+      const token = await getAuthToken()
+      const response = await api.put(`/progress/roadmaps/${roadmapId}/activate`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (response.data?.success) {
+        await fetchUserProgress()
+        toast.success('Switched to roadmap')
+      }
+    } catch (error) {
+      console.error('Switch roadmap error:', error)
+      toast.error('Failed to switch roadmap')
     }
   }
 
@@ -195,6 +215,8 @@ export const ProgressProvider = ({ children }) => {
   const value = {
     progress,
     roadmap,
+    roadmaps,
+    activeRoadmapId,
     projects,
     stats,
     loading,
@@ -206,6 +228,7 @@ export const ProgressProvider = ({ children }) => {
     updateWeeklyGoals,
     getProgressAnalytics,
     addActivity,
+    switchRoadmap,
   }
 
   return (

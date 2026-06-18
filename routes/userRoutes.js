@@ -5,6 +5,7 @@ const User = require('../models/User');
 const SkillGraph = require('../models/SkillGraph');
 const Progress = require('../models/Progress');
 const Usage = require('../models/Usage');
+const CareerPath = require('../models/CareerPath');
 
 const router = express.Router();
 
@@ -75,16 +76,23 @@ router.post('/update', authMiddleware, validate(schemas.updateUser), async (req,
 // Complete onboarding
 router.post('/complete-onboarding', authMiddleware, async (req, res) => {
   try {
-    const { preferences, profile } = req.body;
+    const { name, currentRole, skills, experienceYears, preferences, profile, userType } = req.body;
+
+    const update = {
+      onboardingCompleted: true,
+      lastActive: new Date()
+    };
+    if (name !== undefined) update.name = name;
+    if (currentRole !== undefined) update.currentRole = currentRole;
+    if (skills !== undefined) update.skills = skills;
+    if (experienceYears !== undefined) update.experienceYears = experienceYears;
+    if (preferences !== undefined) update.preferences = preferences;
+    if (profile !== undefined) update.profile = profile;
+    if (userType !== undefined) update.userType = userType;
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      {
-        onboardingCompleted: true,
-        preferences: preferences || {},
-        profile: profile || {},
-        lastActive: new Date()
-      },
+      update,
       { new: true, runValidators: true }
     ).select('-firebaseUid');
 
@@ -197,6 +205,50 @@ router.delete('/account', authMiddleware, async (req, res) => {
       success: false,
       message: 'Failed to delete account'
     });
+  }
+});
+
+// Get current month usage
+router.get('/usage', authMiddleware, async (req, res) => {
+  try {
+    const usage = await Usage.getUsage(req.user._id)
+    res.json({ success: true, data: usage })
+  } catch (error) {
+    console.error('Usage fetch error:', error)
+    res.status(500).json({ success: false, message: 'Failed to fetch usage' })
+  }
+})
+
+// Save a career path to history
+router.post('/career-path', authMiddleware, async (req, res) => {
+  try {
+    const { targetRole, currentRole, requiredSkills, timeToAchieve, difficulty, reasoning, salaryRange, marketDemand, keySteps, pathSteps } = req.body;
+
+    const careerPath = await CareerPath.findOneAndUpdate(
+      { userId: req.user._id, targetRole },
+      {
+        userId: req.user._id,
+        currentRole: currentRole || req.user.selectedCareerPath?.currentRole || 'Not specified',
+        targetRole,
+        requiredSkills: requiredSkills || [],
+        timeToAchieve: timeToAchieve || '',
+        difficulty: difficulty || 'intermediate',
+        reasoning: reasoning || `Career path to become a ${targetRole}`,
+        salaryRange: salaryRange || '',
+        marketDemand: marketDemand || 'medium',
+        keySteps: keySteps || [],
+        pathSteps: pathSteps || [],
+        status: 'active',
+        aiGeneratedAt: new Date(),
+        lastUpdated: new Date(),
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({ success: true, data: { careerPath } });
+  } catch (error) {
+    console.error('Save career path error:', error);
+    res.status(500).json({ success: false, message: 'Failed to save career path' });
   }
 });
 

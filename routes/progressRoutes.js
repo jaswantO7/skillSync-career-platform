@@ -302,8 +302,9 @@ router.get('/:userId?', authMiddleware, async (req, res) => {
     }
 
     // Get additional context
-    const [activeRoadmap, activeProjects] = await Promise.all([
+    const [activeRoadmap, allRoadmaps, activeProjects] = await Promise.all([
       Roadmap.findOne({ userId, status: 'active' }),
+      Roadmap.find({ userId }).sort({ createdAt: -1 }).select('title targetRole status overallProgress createdAt monthlyPlans'),
       Project.find({ userId, status: { $in: ['in_progress', 'planned'] } }).limit(5)
     ]);
 
@@ -312,6 +313,7 @@ router.get('/:userId?', authMiddleware, async (req, res) => {
       data: {
         progress,
         activeRoadmap,
+        allRoadmaps,
         activeProjects,
         summary: {
           totalPoints: progress.totalPoints,
@@ -330,5 +332,42 @@ router.get('/:userId?', authMiddleware, async (req, res) => {
   }
 });
 
+// Get all roadmaps for the current user
+router.get('/roadmaps', authMiddleware, async (req, res) => {
+  try {
+    const roadmaps = await Roadmap.find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .select('title targetRole status overallProgress duration createdAt monthlyPlans');
+
+    res.json({ success: true, data: { roadmaps } });
+  } catch (error) {
+    console.error('Get roadmaps error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch roadmaps' });
+  }
+});
+
+// Activate a specific roadmap (deactivates others)
+router.put('/roadmaps/:id/activate', authMiddleware, async (req, res) => {
+  try {
+    const roadmap = await Roadmap.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!roadmap) {
+      return res.status(404).json({ success: false, message: 'Roadmap not found' });
+    }
+
+    await Roadmap.updateMany(
+      { userId: req.user._id, status: 'active', _id: { $ne: roadmap._id } },
+      { status: 'paused', lastUpdated: new Date() }
+    );
+
+    roadmap.status = 'active';
+    roadmap.lastUpdated = new Date();
+    await roadmap.save();
+
+    res.json({ success: true, data: { roadmap } });
+  } catch (error) {
+    console.error('Activate roadmap error:', error);
+    res.status(500).json({ success: false, message: 'Failed to activate roadmap' });
+  }
+});
 
 module.exports = router;

@@ -36,7 +36,7 @@ UsageSchema.statics.getUsage = async function (userId) {
   const now = new Date()
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const doc = await this.findOne({ userId, month })
-  return doc || { mentorChats: 0, careerPathsGenerated: 0, roadmapsGenerated: 0, resumesParsed: 0, projectsSuggested: 0 }
+  return doc || { mentorChats: 0, careerPathsGenerated: 0, roadmapsGenerated: 0, resumesParsed: 0, projectsSuggested: 0, projectsStarted: 0 }
 }
 
 module.exports = mongoose.model('Usage', UsageSchema)

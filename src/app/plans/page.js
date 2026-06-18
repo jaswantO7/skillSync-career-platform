@@ -7,12 +7,12 @@ import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { useAuth } from '@/context/AuthContext'
-import { authAPI } from '@/lib/api'
+import { stripeAPI } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
 const PlansPage = () => {
-  const { userProfile, setUserProfile } = useAuth()
+  const { userProfile } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(null)
 
@@ -29,10 +29,10 @@ const PlansPage = () => {
       btnClass: 'bg-white dark:bg-surface-800 border-2 border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white hover:bg-surface-50 dark:hover:bg-surface-700',
       features: [
         ['Resume & Skill Analysis', true],
-        ['AI Career Paths', '1 path'],
+        ['AI Career Paths', true],
         ['Learning Roadmaps', '1 roadmap'],
         ['AI Mentor Chat', '5/mo'],
-        ['Portfolio Projects', 'Limited'],
+        ['Portfolio Projects', '3 projects'],
         ['Progress Analytics', false],
       ],
       cta: 'Current',
@@ -81,16 +81,20 @@ const PlansPage = () => {
 
   const handlePlanChange = async (planId) => {
     if (planId === currentPlan) return
+
+    if (planId === 'enterprise') {
+      window.location.href = 'mailto:sales@skillsync.com'
+      return
+    }
+
     try {
       setLoading(planId)
-      const res = await authAPI.updatePlan(planId)
-      if (res.data?.success) {
-        setUserProfile(prev => ({ ...prev, subscriptionPlan: planId }))
-        toast.success(`Plan changed to ${planId.charAt(0).toUpperCase() + planId.slice(1)}`)
-        router.refresh()
+      const res = await stripeAPI.createCheckout(planId)
+      if (res.data?.url) {
+        window.location.href = res.data.url
       }
     } catch (error) {
-      toast.error('Failed to update plan')
+      toast.error('Unable to start checkout. Please try again.')
     } finally {
       setLoading(null)
     }
@@ -106,7 +110,7 @@ const PlansPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <h1 className="text-4xl font-bold text-surface-900 dark:text-white mb-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-surface-900 dark:text-white mb-3">
               Choose your plan
             </h1>
             <p className="text-lg text-surface-500 dark:text-surface-400">
@@ -123,11 +127,11 @@ const PlansPage = () => {
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className={`relative flex flex-col rounded-2xl ${
-                    isPro
-                      ? 'glass-card ring-2 ring-emerald-500/50 shadow-2xl shadow-emerald-500/10 scale-105 z-10'
-                      : 'glass-card'
-                  }`}
+                    className={`relative flex flex-col rounded-2xl ${
+                      isPro
+                        ? 'glass-card ring-2 ring-emerald-500/50 shadow-2xl shadow-emerald-500/10 md:scale-105 z-10'
+                        : 'glass-card'
+                    }`}
                 >
                   {isPro && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">

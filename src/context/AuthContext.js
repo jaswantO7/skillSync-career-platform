@@ -150,7 +150,9 @@ export const AuthProvider = ({ children }) => {
     try {
       await signOut(auth)
       Cookies.remove("auth-token")   // ✅ Clear cookie at logout
+      sessionStorage.clear()         // ✅ Clear session data (cached recommendations, career data, etc.)
       toast.success('Signed out successfully')
+      setTimeout(() => { window.location.href = '/' }, 100)
     } catch (error) {
       console.error('Sign out error:', error)
       toast.error('Failed to sign out')
@@ -191,11 +193,11 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` }
       })
       setUserProfile(response.data.data)
-      toast.success('Onboarding completed!')
+      toast.success('Profile saved!')
       return response.data.data
     } catch (error) {
       console.error('Complete onboarding error:', error)
-      toast.error('Failed to complete onboarding')
+      toast.error('Failed to save profile')
       throw error
     }
   }

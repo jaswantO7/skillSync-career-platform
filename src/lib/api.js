@@ -57,6 +57,7 @@ export const authAPI = {
   updateProfile: (data) => api.post('/user/update', data),
   completeOnboarding: (data) => api.post('/user/complete-onboarding', data),
   getStats: () => api.get('/user/stats'),
+  getUsage: () => api.get('/user/usage'),
   deleteAccount: () => api.delete('/user/account'),
   updatePlan: (plan) => api.post('/user/plan', { plan }),
 }
@@ -90,6 +91,15 @@ export const projectAPI = {
   startProject: (data) => api.post('/projects/start', data),
   completeDeliverable: (data) => api.post('/projects/deliverable', data),
   removeProject: (id) => api.delete(`/projects/${id}`),
+}
+
+export const stripeAPI = {
+  createCheckout: (plan) => api.post('/stripe/create-checkout', { plan }),
+  getPortalLink: () => api.get('/stripe/portal'),
+}
+
+export const careerPathAPI = {
+  save: (data) => api.post('/user/career-path', data),
 }
 
 // Utility functions

@@ -3,17 +3,18 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Target, 
-  Map, 
-  FolderOpen, 
-  MessageCircle, 
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  LayoutDashboard,
+  FileText,
+  Target,
+  Map,
+  FolderOpen,
+  MessageCircle,
   Settings,
   ChevronLeft,
   ChevronRight,
+  X,
   AlertTriangle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,8 +22,13 @@ import { api } from '@/lib/api'
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [aiStatus, setAiStatus] = useState({ mode: 'checking', label: 'Checking...' })
   const pathname = usePathname()
+
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
 
   useEffect(() => {
     const checkAI = async () => {
@@ -53,14 +59,8 @@ const Sidebar = () => {
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
-  return (
-    <motion.div
-      className={cn(
-        'bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border-r border-surface-200/50 dark:border-surface-700/30 flex flex-col transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
-      )}
-      animate={{ width: collapsed ? 64 : 256 }}
-    >
+  const sidebarContent = (
+    <>
       <div className="p-4 border-b border-surface-200/50 dark:border-surface-700/30">
         <div className="flex items-center justify-between">
           {!collapsed && (
@@ -73,17 +73,25 @@ const Sidebar = () => {
               </span>
             </Link>
           )}
-          
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-colors"
-          >
-            {collapsed ? (
-              <ChevronRight size={20} className="text-surface-500 dark:text-surface-400" />
-            ) : (
-              <ChevronLeft size={20} className="text-surface-500 dark:text-surface-400" />
-            )}
-          </button>
+
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-colors hidden md:block"
+            >
+              {collapsed ? (
+                <ChevronRight size={20} className="text-surface-500 dark:text-surface-400" />
+              ) : (
+                <ChevronLeft size={20} className="text-surface-500 dark:text-surface-400" />
+              )}
+            </button>
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-colors md:hidden"
+            >
+              <X size={20} className="text-surface-500 dark:text-surface-400" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -92,7 +100,7 @@ const Sidebar = () => {
           {navigation.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
-            
+
             return (
               <li key={item.name}>
                 <Link
@@ -108,7 +116,7 @@ const Sidebar = () => {
                   {!collapsed && (
                     <span className="ml-3">{item.name}</span>
                   )}
-                  
+
                   {isActive && (
                     <motion.div
                       className="absolute left-0 top-1 bottom-1 w-1 bg-emerald-500 rounded-r-full"
@@ -151,14 +159,65 @@ const Sidebar = () => {
               <p className="text-emerald-100/80 text-xs mb-3 leading-relaxed">
                 Unlock unlimited AI chats and advanced features
               </p>
-              <Link href="/plans" className="inline-block bg-white/20 hover:bg-white/30 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur-sm transition-all">
+              <Link href="/plans" className="inline-block bg-white/20 hover:bg-white/30 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur-sm transition-all" onClick={() => setMobileOpen(false)}>
                 Learn More
               </Link>
             </div>
           </div>
         </div>
       )}
-    </motion.div>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile overlay + backdrop */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="fixed inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
+            <motion.div
+              className="fixed left-0 top-0 bottom-0 w-64 bg-white/95 dark:bg-surface-900/95 backdrop-blur-xl border-r border-surface-200/50 dark:border-surface-700/30 flex flex-col shadow-2xl"
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            >
+              {sidebarContent}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop sidebar */}
+      <motion.div
+        className={cn(
+          'hidden md:flex bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border-r border-surface-200/50 dark:border-surface-700/30 flex-col transition-all duration-300',
+          collapsed ? 'w-16' : 'w-64'
+        )}
+        animate={{ width: collapsed ? 64 : 256 }}
+      >
+        {sidebarContent}
+      </motion.div>
+
+      {/* Floating hamburger for mobile */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed top-4 left-4 z-40 md:hidden w-9 h-9 rounded-lg bg-white/90 dark:bg-surface-800/90 backdrop-blur-sm border border-surface-200 dark:border-surface-700 flex items-center justify-center text-surface-600 dark:text-surface-400 shadow-lg"
+        aria-label="Open sidebar"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </>
   )
 }
 

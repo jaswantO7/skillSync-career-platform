@@ -22,6 +22,7 @@ const Card = ({
       onClick={onClick}
       whileHover={hover ? { scale: 1.02, y: -4 } : undefined}
       whileTap={onClick ? { scale: 0.98 } : undefined}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       {...props}
     >
       {children}

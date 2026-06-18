@@ -19,7 +19,7 @@ const Roadmap = require("../models/Roadmap");
 const Project = require("../models/Project");
 const Usage = require("../models/Usage");
 const Chat = require("../models/Chat");
-const { checkFeatureAccess } = require("../middleware/planEnforcer");
+const { checkFeatureAccess, checkUsageLimit } = require("../middleware/planEnforcer");
 
 const router = express.Router();
 
@@ -148,6 +148,7 @@ router.post(
   "/parseResume",
   aiRateLimit,
   authMiddleware,
+  checkFeatureAccess('skill_audit'),
   (req, res, next) => {
     upload.single("resume")(req, res, (err) => {
       if (err) {
@@ -232,6 +233,9 @@ router.post(
 
       await skillGraph.save();
 
+      // Track usage
+      await Usage.increment(req.user._id, 'resumesParsed')
+
       res.json({
         success: true,
         message: "Resume parsed successfully",
@@ -267,6 +271,7 @@ router.post(
   "/recommendPath",
   aiRateLimit,
   authMiddleware,
+  checkFeatureAccess('career_path_basic'),
   validateRecommendPath,
   handleValidationErrors,
   async (req, res) => {
@@ -296,9 +301,6 @@ router.post(
         currentRole: currentRole || '',
       }));
 
-      // Track usage
-      await Usage.increment(req.user._id, 'careerPathsGenerated')
-
       res.json({
         success: true,
         message: "Career paths recommended successfully",
@@ -322,6 +324,8 @@ router.post(
   "/generateRoadmap",
   aiRateLimit,
   authMiddleware,
+  checkFeatureAccess('roadmap_basic'),
+  checkUsageLimit('roadmapsGenerated'),
   validateGenerateRoadmap,
   handleValidationErrors,
   async (req, res) => {
@@ -403,6 +407,12 @@ router.post(
 
       await roadmap.save();
 
+      // Deactivate any previously active roadmaps
+      await Roadmap.updateMany(
+        { userId: req.user._id, status: 'active', _id: { $ne: roadmap._id } },
+        { status: 'paused' }
+      );
+
       // Track usage
       await Usage.increment(req.user._id, 'roadmapsGenerated')
 
@@ -429,6 +439,7 @@ router.post(
   "/suggestProjects",
   aiRateLimit,
   authMiddleware,
+  checkFeatureAccess('projects_basic'),
   validateSuggestProjects,
   handleValidationErrors,
   async (req, res) => {
@@ -488,24 +499,14 @@ router.post(
   "/mentorChat",
   aiRateLimit,
   authMiddleware,
+  checkFeatureAccess('mentor_chat'),
+  checkUsageLimit('mentorChats'),
   validateMentorChat,
   handleValidationErrors,
   async (req, res) => {
     try {
       const { message, context = {} } = req.body;
       const userId = req.user._id.toString();
-
-      // Check plan limits for mentor chat
-      const plan = req.user?.subscriptionPlan || 'free'
-      if (plan === 'free') {
-        const usage = await Usage.getUsage(req.user._id)
-        if (usage.mentorChats >= 5) {
-          return res.status(403).json({
-            success: false,
-            message: 'Free plan limited to 5 mentor chats per month. Upgrade to Pro for unlimited chats.',
-          })
-        }
-      }
 
       // Get user context if not provided
       if (!context.currentRole || !context.skills) {

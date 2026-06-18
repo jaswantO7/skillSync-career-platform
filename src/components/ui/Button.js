@@ -20,9 +20,9 @@ const Button = forwardRef(({
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus-ring disabled:opacity-50 disabled:cursor-not-allowed'
   
   const variants = {
-    primary: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg hover:shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30',
-    secondary: 'bg-white dark:bg-surface-800/80 hover:bg-surface-50 dark:hover:bg-surface-700/80 text-surface-900 dark:text-surface-100 border border-surface-200 dark:border-surface-600/50 shadow-md hover:shadow-lg',
-    ghost: 'bg-transparent hover:bg-surface-100 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300',
+    primary: 'bg-stitch-primary hover:bg-stitch-primary/90 text-white font-semibold shadow-lg hover:shadow-xl shadow-stitch-primary/20 hover:shadow-stitch-primary/30 dark:shadow-[0_4px_20px_rgba(0,170,110,0.15)] dark:hover:shadow-[0_4px_20px_rgba(0,170,110,0.25)]',
+    secondary: 'bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl hover:bg-white dark:hover:bg-white/[0.10] text-surface-900 dark:text-white/80 border border-surface-200 dark:border-white/15 shadow-md hover:shadow-lg dark:shadow-[0_4px_20px_rgba(255,255,255,0.04)] dark:hover:shadow-[0_4px_20px_rgba(255,255,255,0.07)]',
+    ghost: 'bg-transparent hover:bg-surface-100 dark:hover:bg-white/10 text-surface-700 dark:text-white/70',
     danger: 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl',
     success: 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl',
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Bell, User, LogOut, Settings, Sun, Moon } from 'lucide-react'
 import Link from 'next/link'
@@ -15,6 +15,21 @@ const DashboardHeader = () => {
   const [showNotifications, setShowNotifications] = useState(false)
   const { user, userProfile, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const notifRef = useRef(null)
+  const userMenuRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotifications(false)
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const notifications = [
     {
@@ -46,9 +61,9 @@ const DashboardHeader = () => {
   }
 
   return (
-    <header className="glass-nav px-6 py-3">
+    <header className="glass-nav px-6 py-3 relative z-40">
       <div className="flex items-center justify-between">
-        <div className="flex-1 max-w-md">
+        <div className="flex-1 max-w-md hidden sm:block">
           <Input
             placeholder="Search skills, projects, or resources..."
             icon={<Search size={20} />}
@@ -65,7 +80,7 @@ const DashboardHeader = () => {
             icon={theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           />
 
-          <div className="relative">
+          <div className="relative" ref={notifRef}>
             <Button
               variant="ghost"
               size="sm"
@@ -81,7 +96,7 @@ const DashboardHeader = () => {
             <AnimatePresence>
               {showNotifications && (
                 <motion.div
-                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-50"
+                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-surface-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-[60]"
                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -94,8 +109,8 @@ const DashboardHeader = () => {
                     {notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`px-4 py-3 hover:bg-surface-50 dark:hover:bg-surface-700/50 cursor-pointer ${
-                          notification.unread ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''
+                        className={`px-4 py-3 hover:bg-surface-50 dark:hover:bg-white/10 cursor-pointer ${
+                          notification.unread ? 'bg-stitch-primary/5 dark:bg-stitch-primary/10' : ''
                         }`}
                       >
                         <div className="flex items-start justify-between">
@@ -111,14 +126,14 @@ const DashboardHeader = () => {
                             </p>
                           </div>
                           {notification.unread && (
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full ml-2 mt-1"></div>
+                            <div className="w-2 h-2 bg-stitch-primary rounded-full ml-2 mt-1"></div>
                           )}
                         </div>
                       </div>
                     ))}
                   </div>
                   <div className="px-4 py-2 border-t border-surface-200 dark:border-surface-700">
-                    <button className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-medium">
+                    <button className="text-sm text-stitch-primary hover:text-stitch-primary/80 dark:text-stitch-primary-fixed font-medium">
                       View all notifications
                     </button>
                   </div>
@@ -127,12 +142,12 @@ const DashboardHeader = () => {
             </AnimatePresence>
           </div>
 
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-3 p-1.5 pr-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-all"
+              className="flex items-center space-x-3 p-1.5 pr-3 rounded-xl hover:bg-surface-100 dark:hover:bg-white/10 transition-all"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-violet-600 flex items-center justify-center shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-stitch-primary to-stitch-secondary flex items-center justify-center shadow-sm">
                 <span className="text-white text-xs font-semibold">
                   {userProfile?.name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
                 </span>
@@ -150,50 +165,50 @@ const DashboardHeader = () => {
             <AnimatePresence>
               {showUserMenu && (
                 <motion.div
-                  className="absolute right-0 mt-2 w-56 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-50"
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{ duration: 0.2 }}
+              className="absolute right-0 mt-2 w-56 bg-white dark:bg-surface-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-[60]"
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="px-4 py-3 border-b border-surface-200 dark:border-surface-700">
+                <p className="font-medium text-surface-900 dark:text-white">
+                  {userProfile?.name || user?.displayName || 'User'}
+                </p>
+                <p className="text-sm text-surface-500 dark:text-surface-400">
+                  {user?.email}
+                </p>
+              </div>
+              
+              <div className="py-2">
+                <Link
+                  href="/settings?tab=profile"
+                  className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700/50"
+                  onClick={() => setShowUserMenu(false)}
                 >
-                  <div className="px-4 py-3 border-b border-surface-200 dark:border-surface-700">
-                    <p className="font-medium text-surface-900 dark:text-white">
-                      {userProfile?.name || user?.displayName || 'User'}
-                    </p>
-                    <p className="text-sm text-surface-500 dark:text-surface-400">
-                      {user?.email}
-                    </p>
-                  </div>
-                  
-                  <div className="py-2">
-                    <Link
-                      href="/settings?tab=profile"
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <User size={16} />
-                      <span>Profile Settings</span>
-                    </Link>
-                    
-                    <Link
-                      href="/settings?tab=account"
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <Settings size={16} />
-                      <span>Account Settings</span>
-                    </Link>
-                  </div>
-                  
-                  <div className="border-t border-surface-200 dark:border-surface-700 pt-2">
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-surface-50 dark:hover:bg-surface-700/50"
-                    >
-                      <LogOut size={16} />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
+                  <User size={16} />
+                  <span>Profile Settings</span>
+                </Link>
+                
+                <Link
+                  href="/settings?tab=account"
+                  className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700/50"
+                  onClick={() => setShowUserMenu(false)}
+                >
+                  <Settings size={16} />
+                  <span>Account Settings</span>
+                </Link>
+              </div>
+              
+              <div className="border-t border-surface-200 dark:border-surface-700 pt-2">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-surface-50 dark:hover:bg-surface-700/50"
+                >
+                  <LogOut size={16} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
                 </motion.div>
               )}
             </AnimatePresence>

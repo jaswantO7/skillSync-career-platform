@@ -23,7 +23,10 @@ import {
   Bell,
   CreditCard,
   Camera,
-  Image
+  Image,
+  Code,
+  Plus,
+  X
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -33,7 +36,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import toast from 'react-hot-toast'
-import { authAPI } from '@/lib/api'
+import { authAPI, stripeAPI } from '@/lib/api'
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('profile')
@@ -62,8 +65,10 @@ const SettingsPage = () => {
     learningStyle: 'visual',
     availableHoursPerWeek: 10,
     careerGoals: '',
-    industries: ''
+    industries: '',
+    skills: []
   })
+  const [skillInput, setSkillInput] = useState('')
 
   const avatarPresets = [
     { id: 'sunset', gradient: 'from-orange-500 to-pink-500', bg: 'bg-gradient-to-br from-orange-500 to-pink-500' },
@@ -107,7 +112,8 @@ const SettingsPage = () => {
         learningStyle: userProfile.preferences?.learningStyle || 'visual',
         availableHoursPerWeek: userProfile.preferences?.availableHoursPerWeek || 10,
         careerGoals: (userProfile.preferences?.careerGoals || []).join(', '),
-        industries: (userProfile.preferences?.industries || []).join(', ')
+        industries: (userProfile.preferences?.industries || []).join(', '),
+        skills: userProfile.skills || []
       })
       if (userProfile.profile?.avatar) setSelectedAvatar(userProfile.profile.avatar)
       if (userProfile.profile?.banner) setSelectedBanner(userProfile.profile.banner)
@@ -134,6 +140,8 @@ const SettingsPage = () => {
           avatar: selectedAvatar,
           banner: selectedBanner
         },
+        experienceYears: userProfile?.experienceYears || 0,
+        skills: form.skills,
         preferences: {
           learningStyle: form.learningStyle,
           availableHoursPerWeek: parseInt(form.availableHoursPerWeek) || 10,
@@ -152,6 +160,17 @@ const SettingsPage = () => {
       await resetPassword(user?.email)
     } catch {
       // error handled by AuthContext
+    }
+  }
+
+  const handleManageBilling = async () => {
+    try {
+      const res = await stripeAPI.getPortalLink()
+      if (res.data?.url) {
+        window.location.href = res.data.url
+      }
+    } catch (error) {
+      toast.error('Failed to open billing portal')
     }
   }
 
@@ -193,9 +212,9 @@ const SettingsPage = () => {
   return (
     <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-surface-900 dark:via-surface-900 dark:to-indigo-950">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <DashboardHeader />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-2">
           <div className="max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {/* Profile Header Card */}
@@ -285,12 +304,12 @@ const SettingsPage = () => {
             </Card>
 
             {/* Tabs */}
-            <div className="flex space-x-2 mb-8">
+            <div className="flex space-x-2 mb-8 overflow-x-auto scrollbar-none flex-nowrap">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2.5 px-5 py-3 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex items-center space-x-2.5 px-4 md:px-5 py-3 rounded-xl text-sm font-medium transition-all shrink-0 ${
                     activeTab === tab.id
                       ? 'glass-card text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/20'
                       : 'text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-300 hover:bg-white/50 dark:hover:bg-surface-800/50'
@@ -459,6 +478,52 @@ const SettingsPage = () => {
                           </div>
                         </div>
 
+                        <div className="border-t border-surface-200 dark:border-surface-700" />
+
+                        {/* Skills */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-wider mb-4">Skills</h4>
+                          <div>
+                            <div className="flex flex-wrap gap-1.5 mb-2 min-h-[28px]">
+                              {form.skills.map((s, i) => (
+                                <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm rounded-lg">
+                                  <Code size={12} />
+                                  {s}
+                                  <button type="button" onClick={() => setForm(prev => ({ ...prev, skills: prev.skills.filter((_, j) => j !== i) }))} className="hover:text-red-500 ml-0.5">
+                                    <X size={12} />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Input
+                                value={skillInput}
+                                onChange={(e) => setSkillInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if ((e.key === 'Enter' || e.key === ',') && skillInput.trim()) {
+                                    e.preventDefault()
+                                    if (!form.skills.includes(skillInput.trim())) {
+                                      setForm(prev => ({ ...prev, skills: [...prev.skills, skillInput.trim()] }))
+                                    }
+                                    setSkillInput('')
+                                  }
+                                }}
+                                placeholder="Type a skill and press Enter"
+                                className="flex-1"
+                                icon={<Plus size={16} />}
+                              />
+                              <Button size="sm" variant="outline" type="button" onClick={() => {
+                                if (skillInput.trim() && !form.skills.includes(skillInput.trim())) {
+                                  setForm(prev => ({ ...prev, skills: [...prev.skills, skillInput.trim()] }))
+                                  setSkillInput('')
+                                }
+                              }}>
+                                Add
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Save Button */}
                         <div className="border-t border-surface-200 dark:border-surface-700 pt-6">
                           <div className="flex items-center justify-between">
@@ -531,13 +596,23 @@ const SettingsPage = () => {
                               <p className="text-sm text-surface-500 dark:text-surface-400 capitalize">{userProfile?.subscriptionPlan || 'Free'}</p>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => router.push('/plans')}
-                            className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium rounded-full hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
-                          >
-                            {userProfile?.subscriptionPlan === 'free' ? 'Upgrade' : 'Active'}
-                          </button>
+                          {userProfile?.subscriptionPlan === 'free' ? (
+                            <button
+                              type="button"
+                              onClick={() => router.push('/plans')}
+                              className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium rounded-full hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
+                            >
+                              Upgrade
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleManageBilling}
+                              className="px-3 py-1 bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-300 text-xs font-medium rounded-full hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors cursor-pointer"
+                            >
+                              Manage Billing
+                            </button>
+                          )}
                         </div>
 
                         {/* Password Reset */}

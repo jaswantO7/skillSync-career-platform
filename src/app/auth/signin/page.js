@@ -77,7 +77,7 @@ const SignInPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-violet-50 dark:from-surface-950 dark:via-surface-950 dark:to-surface-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-stitch-primary/5 via-white to-stitch-secondary/5 dark:from-surface-950 dark:via-surface-950 dark:to-surface-900 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,23 +87,23 @@ const SignInPage = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <div className="w-10 h-10 bg-gradient-to-br from-stitch-primary to-stitch-secondary rounded-lg flex items-center justify-center shadow-lg shadow-stitch-primary/20">
               <span className="text-white font-bold">S</span>
             </div>
-            <span className="font-display font-bold text-2xl text-surface-900 dark:text-white">
+            <span className="font-display font-bold text-xl text-surface-900 dark:text-white">
               SkillSync
             </span>
           </Link>
           
-          <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-surface-900 dark:text-white mb-1">
             Welcome Back
           </h1>
-          <p className="text-surface-500 dark:text-surface-400">
+          <p className="text-sm text-surface-500 dark:text-surface-400">
             Sign in to continue your career growth journey
           </p>
         </div>
 
-        <Card>
+        <Card className="bg-white border-surface-200 shadow-lg shadow-black/5 dark:bg-white/[0.06] dark:border-white/15 dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)]">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
@@ -133,7 +133,7 @@ const SignInPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-surface-400 hover:text-surface-600 dark:hover:text-surface-300"
+                  className="absolute right-3 top-9 text-surface-500 hover:text-surface-700 dark:text-white/50 dark:hover:text-white"
                   disabled={authLoading}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -145,7 +145,7 @@ const SignInPage = () => {
                   <input
                     id="remember"
                     type="checkbox"
-                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-surface-300 rounded"
+                    className="h-4 w-4 text-stitch-primary focus:ring-stitch-primary/30 border-surface-300 rounded"
                   />
                   <label htmlFor="remember" className="ml-2 block text-sm text-surface-700 dark:text-surface-300">
                     Remember me
@@ -154,7 +154,7 @@ const SignInPage = () => {
                 
                 <Link
                   href="/auth/reset-password"
-                  className="text-sm text-emerald-600 hover:text-emerald-500 dark:text-emerald-400"
+                  className="text-sm text-stitch-primary hover:text-stitch-primary/80 dark:text-stitch-primary-fixed"
                 >
                   Forgot password?
                 </Link>
@@ -217,7 +217,7 @@ const SignInPage = () => {
           Don't have an account?{' '}
           <Link
             href="/auth/signup"
-            className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400"
+            className="font-medium text-stitch-primary hover:text-stitch-primary/80 dark:text-stitch-primary-fixed"
           >
             Sign up for free
           </Link>

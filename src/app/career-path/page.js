@@ -14,7 +14,9 @@ import {
   Briefcase,
   BarChart3,
   Search,
-  Info
+  Info,
+  Map,
+  Plus
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
@@ -24,7 +26,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
-import { aiAPI, authAPI } from '@/lib/api'
+import { aiAPI, authAPI, careerPathAPI } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
@@ -36,7 +38,7 @@ const CareerPathPage = () => {
   const [showConfirm, setShowConfirm] = useState(false)
   const [pendingPath, setPendingPath] = useState(null)
   const { user, userProfile, getAuthToken, loading: authLoading } = useAuth()
-  const { addActivity, progress, roadmap } = useProgress()
+  const { addActivity, progress, roadmap, roadmaps, fetchUserProgress } = useProgress()
   const router = useRouter()
   const fetchedRef = useRef(false)
   const [showRoadmapConfirm, setShowRoadmapConfirm] = useState(false)
@@ -45,6 +47,7 @@ const CareerPathPage = () => {
   const [searchLoading, setSearchLoading] = useState(false)
   const [showPathDetails, setShowPathDetails] = useState(false)
   const [selectedPathForDetails, setSelectedPathForDetails] = useState(null)
+  const [showAllRoadmaps, setShowAllRoadmaps] = useState(false)
 
   const mockRecommendations = [
     {
@@ -101,14 +104,14 @@ const CareerPathPage = () => {
       const storedSkills = typeof window !== 'undefined' ? sessionStorage.getItem('careerSkills') : null
       const storedRole = typeof window !== 'undefined' ? sessionStorage.getItem('careerRole') : null
       const storedExp = typeof window !== 'undefined' ? sessionStorage.getItem('careerExp') : null
-      const currentSkills = storedSkills ? JSON.parse(storedSkills) : (userProfile?.skills || ['JavaScript', 'React', 'Node.js'])
-      const currentRole = storedRole || userProfile?.currentRole || 'Software Engineer'
-      const currentExp = storedExp ? parseInt(storedExp) : (userProfile?.experienceYears || 5)
+      const currentSkills = storedSkills ? JSON.parse(storedSkills) : (userProfile?.skills || [])
+      const currentRole = storedRole || userProfile?.currentRole || ''
+      const currentExp = storedExp ? parseInt(storedExp) : (userProfile?.experienceYears || 0)
 
       try {
         const response = await aiAPI.recommendPath({
           currentSkills,
-          goals: userProfile?.preferences?.careerGoals || ['Senior Developer'],
+          goals: userProfile?.preferences?.careerGoals || [currentRole],
           experienceYears: currentExp,
           currentRole
         })
@@ -149,9 +152,9 @@ const CareerPathPage = () => {
       const storedSkills = typeof window !== 'undefined' ? sessionStorage.getItem('careerSkills') : null
       const storedRole = typeof window !== 'undefined' ? sessionStorage.getItem('careerRole') : null
       const storedExp = typeof window !== 'undefined' ? sessionStorage.getItem('careerExp') : null
-      const currentSkills = storedSkills ? JSON.parse(storedSkills) : (userProfile?.skills || ['JavaScript', 'React', 'Node.js'])
-      const currentRole = storedRole || userProfile?.currentRole || 'Software Engineer'
-      const currentExp = storedExp ? parseInt(storedExp) : (userProfile?.experienceYears || 5)
+      const currentSkills = storedSkills ? JSON.parse(storedSkills) : (userProfile?.skills || [])
+      const currentRole = storedRole || userProfile?.currentRole || ''
+      const currentExp = storedExp ? parseInt(storedExp) : (userProfile?.experienceYears || 0)
 
       const response = await aiAPI.recommendPath({
         currentSkills,
@@ -180,8 +183,9 @@ const CareerPathPage = () => {
     const storedPath = typeof window !== 'undefined' ? sessionStorage.getItem('selectedPath') : null
     const sessionPath = storedPath ? JSON.parse(storedPath) : null
     const existingPath = userProfile?.selectedCareerPath?.targetRole || sessionPath?.targetRole
+    const isFreePlan = userProfile?.subscriptionPlan === 'free'
     // Show confirmation if already has a different path saved
-    if (existingPath && existingPath !== path.targetRole) {
+    if (existingPath && existingPath !== path.targetRole && isFreePlan) {
       setPendingPath(path)
       setShowConfirm(true)
       return
@@ -201,8 +205,9 @@ const CareerPathPage = () => {
   }
 
   const handleGenerateRoadmap = (path) => {
+    const isFreePlan = userProfile?.subscriptionPlan === 'free'
     // Check if an active roadmap already exists
-    if (roadmap) {
+    if (roadmap && isFreePlan) {
       setPendingRoadmapPath(path)
       setShowRoadmapConfirm(true)
       return
@@ -213,9 +218,10 @@ const CareerPathPage = () => {
   const proceedGenerateRoadmap = async (path) => {
     try {
       setGeneratingRoadmap(true)
-      
+
       // Save selected career path to database
       await authAPI.updateProfile({
+        name: userProfile?.name || user?.displayName || user?.email?.split('@')[0] || 'User',
         selectedCareerPath: {
           targetRole: path.targetRole,
           requiredSkills: path.requiredSkills,
@@ -224,9 +230,43 @@ const CareerPathPage = () => {
           difficulty: path.difficulty
         }
       })
-      
+
+      // Save to CareerPath collection for history
+      await careerPathAPI.save({
+        targetRole: path.targetRole,
+        currentRole: path.currentRole,
+        requiredSkills: path.requiredSkills,
+        timeToAchieve: path.timeToAchieve,
+        difficulty: path.difficulty,
+        reasoning: path.reasoning || `Career path to become a ${path.targetRole}`,
+        salaryRange: path.salaryRange,
+        marketDemand: path.marketDemand,
+        keySteps: path.keySteps,
+        pathSteps: path.pathSteps,
+      })
+
       // Also save to sessionStorage for immediate warning check
       sessionStorage.setItem('selectedPath', JSON.stringify(path))
+
+      // Actually generate the learning roadmap via AI
+      try {
+        const token = await getAuthToken()
+        const storedSkills = typeof window !== 'undefined' ? sessionStorage.getItem('careerSkills') : null
+        const currentSkills = storedSkills ? JSON.parse(storedSkills) : (userProfile?.skills || [])
+        const parsedMonths = parseInt(path.timeToAchieve) || 6
+        await aiAPI.generateRoadmap({
+          targetRole: path.targetRole,
+          requiredSkills: path.requiredSkills || [],
+          timeframe: parsedMonths,
+          hoursPerWeek: userProfile?.preferences?.availableHoursPerWeek || 10,
+          currentSkills,
+        })
+      } catch (e) {
+        console.warn('Roadmap generation API call failed, profile saved:', e.message)
+      }
+
+      // Refresh progress context so /roadmap page loads fresh data
+      await fetchUserProgress()
 
       // Track activity
       await addActivity(
@@ -234,7 +274,7 @@ const CareerPathPage = () => {
         `Generated learning roadmap for ${path.targetRole}`,
         { targetRole: path.targetRole }
       )
-      
+
       toast.success('Roadmap generated successfully!')
       router.push('/roadmap')
     } catch (error) {
@@ -281,10 +321,10 @@ const CareerPathPage = () => {
     <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <DashboardHeader />
         
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-2">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <motion.div
@@ -301,8 +341,67 @@ const CareerPathPage = () => {
               </p>
             </motion.div>
 
-            {/* Current Selected Path Banner */}
-            {userProfile?.selectedCareerPath?.targetRole && (
+            {/* Current Selected Path / My Roadmaps */}
+            {userProfile?.subscriptionPlan !== 'free' && roadmaps?.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.05 }}
+                className="mb-6"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-surface-900 dark:text-white">My Roadmaps</h2>
+                  <span className="text-sm text-surface-500 dark:text-surface-400">
+                    {roadmaps.filter(r => r.status !== 'abandoned').length} total
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {roadmaps.filter(r => r.status !== 'abandoned')
+                    .slice(0, showAllRoadmaps ? undefined : 3)
+                    .map(r => (
+                    <div key={r._id} className="bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700/50 rounded-xl p-4 hover:shadow-md transition-all">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                            <Map className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-surface-900 dark:text-white leading-tight">{r.title}</p>
+                            <p className="text-xs text-surface-500 dark:text-surface-400">{r.targetRole}</p>
+                          </div>
+                        </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          r.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          r.status === 'paused' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                          'bg-surface-100 text-surface-600 dark:bg-surface-700 dark:text-surface-400'
+                        }`}>{r.status}</span>
+                      </div>
+                      <div className="h-1.5 bg-surface-200 dark:bg-surface-700 rounded-full overflow-hidden mb-3">
+                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${r.overallProgress || 0}%` }} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-surface-500 dark:text-surface-400">{r.overallProgress || 0}% complete</span>
+                        <Button size="sm" variant="secondary" onClick={() => router.push(`/roadmap?id=${r._id}`)}>
+                          View
+                          <ArrowRight size={14} className="ml-1" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {roadmaps.filter(r => r.status !== 'abandoned').length > 3 && (
+                  <div className="mt-4 text-center">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowAllRoadmaps(!showAllRoadmaps)}
+                    >
+                      {showAllRoadmaps ? 'Show Less' : `Show All (${roadmaps.filter(r => r.status !== 'abandoned').length})`}
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            ) : userProfile?.selectedCareerPath?.targetRole ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -342,7 +441,7 @@ const CareerPathPage = () => {
                   </Button>
                 </div>
               </motion.div>
-            )}
+            ) : null}
 
             {/* Custom Career Path Search */}
             <motion.div
@@ -386,10 +485,11 @@ const CareerPathPage = () => {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                 >
                   <Card 
-                    className={`h-full cursor-pointer transition-all duration-200 ${
+                    hover
+                    className={`h-full flex flex-col cursor-pointer transition-all duration-200 ${
                       selectedPath?._id === path._id 
                         ? 'ring-2 ring-emerald-500 shadow-lg' 
-                        : 'hover:shadow-lg hover:scale-105'
+                        : ''
                     }`}
                     onClick={() => handleSelectPath(path)}
                   >
@@ -419,8 +519,8 @@ const CareerPathPage = () => {
                       </div>
                     </CardHeader>
                     
-                    <CardContent>
-                      <div className="space-y-4">
+                    <CardContent className="flex-1 flex flex-col">
+                      <div className="space-y-4 flex-1 flex flex-col">
                         {/* Timeline & Salary */}
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center space-x-1">
@@ -461,8 +561,11 @@ const CareerPathPage = () => {
                           </div>
                         </div>
 
+                        {/* Spacer to push buttons to bottom */}
+                        <div className="flex-1" />
+
                         {/* Action Buttons */}
-                        <div className="flex space-x-2 mt-4">
+                        <div className="flex space-x-2">
                           <Button
                             variant="secondary"
                             size="sm"
@@ -497,6 +600,34 @@ const CareerPathPage = () => {
               ))}
             </div>
 
+            {/* Empty state */}
+            {recommendations.length === 0 && !pageLoading && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-center py-16"
+              >
+                <div className="w-20 h-20 mx-auto mb-6 bg-surface-100 dark:bg-surface-800 rounded-full flex items-center justify-center">
+                  <Target className="w-10 h-10 text-surface-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-surface-900 dark:text-white mb-3">
+                  Getting your recommendations...
+                </h3>
+                <p className="text-surface-500 dark:text-surface-400 max-w-md mx-auto mb-8 leading-relaxed">
+                  The AI is ready to analyze your profile. Try searching for a specific role above, or upload a resume for deeper skill extraction.
+                </p>
+                <div className="flex items-center justify-center space-x-4">
+                  <Button onClick={() => router.push('/skill-audit')}>
+                    Upload Resume
+                  </Button>
+                  <Button variant="secondary" onClick={() => window.location.reload()}>
+                    Reload Page
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
             {/* Selected Path Details */}
             {selectedPath && (
               <motion.div
@@ -504,7 +635,7 @@ const CareerPathPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <Card>
+                <Card className="bg-white border-surface-200">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Target className="w-6 h-6 text-emerald-600" />
