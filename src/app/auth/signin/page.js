@@ -77,7 +77,7 @@ const SignInPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stitch-primary/5 via-white to-stitch-secondary/5 dark:from-surface-950 dark:via-surface-950 dark:to-surface-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-stitch-primary/5 via-white to-stitch-secondary/5 dark:from-surface-950 dark:via-surface-950 dark:to-surface-900 flex items-center justify-center p-3 sm:p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -85,17 +85,17 @@ const SignInPage = () => {
         className="w-full max-w-md"
       >
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-stitch-primary to-stitch-secondary rounded-lg flex items-center justify-center shadow-lg shadow-stitch-primary/20">
-              <span className="text-white font-bold">S</span>
+        <div className="text-center mb-6 sm:mb-8">
+          <Link href="/" className="inline-flex items-center space-x-2 mb-4 sm:mb-6">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-stitch-primary to-stitch-secondary rounded-lg flex items-center justify-center shadow-lg shadow-stitch-primary/20">
+              <span className="text-white font-bold text-sm sm:text-base">S</span>
             </div>
-            <span className="font-display font-bold text-xl text-surface-900 dark:text-white">
+            <span className="font-display font-bold text-lg sm:text-xl text-surface-900 dark:text-white">
               SkillSync
             </span>
           </Link>
           
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white mb-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-surface-900 dark:text-white mb-1">
             Welcome Back
           </h1>
           <p className="text-sm text-surface-500 dark:text-surface-400">
@@ -104,7 +104,7 @@ const SignInPage = () => {
         </div>
 
         <Card className="bg-white border-surface-200 shadow-lg shadow-black/5 dark:bg-white/[0.06] dark:border-white/15 dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)]">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 label="Email Address"

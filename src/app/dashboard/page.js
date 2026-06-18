@@ -104,18 +104,18 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <DashboardHeader />
         
-        <main className="flex-1 overflow-y-auto p-2">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
+          <div className="max-w-7xl mx-auto space-y-4 lg:space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="mb-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2">
+              <div className="mb-4 sm:mb-6 lg:mb-8">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-1 sm:mb-2">
                   Welcome back, {userProfile?.name || user?.displayName || 'there'}!
                 </h1>
-                <p className="text-surface-500 dark:text-surface-400">
+                <p className="text-sm sm:text-base text-surface-500 dark:text-surface-400">
                   Here's your career growth overview and recent progress.
                 </p>
               </div>
@@ -134,7 +134,7 @@ const Dashboard = () => {
               }}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
                 <ProgressCard title="Total Points" value={stats.totalPoints} icon={Trophy} color="text-emerald-600" bgColor="bg-emerald-100" />
               </motion.div>
@@ -149,8 +149,8 @@ const Dashboard = () => {
               </motion.div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+              <div className="lg:col-span-2 space-y-4 lg:space-y-6">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
                   <CareerSummary roadmap={roadmap} userProfile={userProfile} />
                 </motion.div>
@@ -226,7 +226,7 @@ const Dashboard = () => {
                 )}
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 lg:space-y-6">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.75 }}>
                   <Card>
                     <CardHeader>
@@ -254,9 +254,9 @@ const Dashboard = () => {
                           const Icon = action.icon
                           return (
                             <Link key={action.title} href={action.href}>
-                              <div className="flex items-center p-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-all cursor-pointer">
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mr-3 shadow-sm`}>
-                                  <Icon size={20} className="text-white" />
+                              <div className="flex items-center p-2 sm:p-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-all cursor-pointer">
+                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mr-2 sm:mr-3 shadow-sm shrink-0`}>
+                                  <Icon size={18} className="text-white" />
                                 </div>
                                 <div className="flex-1">
                                   <h4 className="font-medium text-surface-900 dark:text-white text-sm">{action.title}</h4>

@@ -16,7 +16,7 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] },
 })
 
-const containerClass = 'max-w-[1280px] mx-auto px-2'
+const containerClass = 'max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8'
 
 const LandingPage = () => {
   return (
@@ -24,30 +24,30 @@ const LandingPage = () => {
       <Navbar />
 
       {/* ─── HERO ─── */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-surface-55 dark:bg-surface-950">
+      <section className="relative min-h-[80vh] sm:min-h-screen flex items-center overflow-hidden bg-surface-55 dark:bg-surface-950">
         <HeroShader />
-        <div className={`${containerClass} grid lg:grid-cols-2 gap-16 items-center w-full relative z-10`}>
+        <div className={`${containerClass} grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 items-center w-full relative z-10`}>
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-8"
+            className="space-y-5 sm:space-y-6 lg:space-y-8"
           >
             <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-stitch-primary-container/10 border border-stitch-primary-container/20 rounded-full"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-stitch-primary-container/10 border border-stitch-primary-container/20 rounded-full"
             >
-              <Sparkles size={14} className="text-stitch-primary" />
-              <span className="text-xs font-bold uppercase tracking-wider text-stitch-primary">AI-powered career platform</span>
+              <Sparkles size={12} className="text-stitch-primary" />
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stitch-primary">AI-powered career platform</span>
             </motion.span>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.15 }}
-              className="font-display text-[44px] leading-[1.15] font-bold tracking-tight text-surface-900 dark:text-white"
+              className="font-display text-[28px] sm:text-[36px] md:text-[44px] leading-[1.15] font-bold tracking-tight text-surface-900 dark:text-white"
             >
               Your AI Career<br />
               <span className="stitch-text-gradient">Growth Companion</span>
@@ -57,7 +57,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
-              className="text-base leading-relaxed text-surface-500 dark:text-surface-400 max-w-lg"
+              className="text-sm sm:text-base leading-relaxed text-surface-500 dark:text-surface-400 max-w-lg"
             >
               Transform your professional journey with AI-powered skill analysis, personalized learning roadmaps, and intelligent career guidance.
             </motion.p>
@@ -66,22 +66,22 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35 }}
-              className="flex flex-wrap gap-4"
+              className="flex flex-wrap gap-3 sm:gap-4"
             >
               <Link href="/skill-audit">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center gap-2 bg-stitch-primary text-white px-6 py-3 rounded-full font-display text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="inline-flex items-center gap-2 bg-stitch-primary text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-full font-display text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   Get Free Skill Audit
-                  <ArrowRight size={16} />
+                  <ArrowRight size={14} />
                 </motion.button>
               </Link>
               <Link href="#how-it-works">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
-                  className="inline-flex items-center border border-surface-300 dark:border-surface-600 px-6 py-3 rounded-full font-display text-sm font-semibold text-surface-900 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800/50 transition-all duration-300"
+                  className="inline-flex items-center border border-surface-300 dark:border-surface-600 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full font-display text-xs sm:text-sm font-semibold text-surface-900 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800/50 transition-all duration-300"
                 >
                   See how it works
                 </motion.button>
@@ -92,7 +92,7 @@ const LandingPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.45 }}
-              className="flex gap-12 pt-8 border-t border-surface-200 dark:border-surface-700"
+              className="flex gap-4 sm:gap-8 lg:gap-12 pt-5 sm:pt-6 lg:pt-8 border-t border-surface-200 dark:border-surface-700"
             >
               {[
                 ['10k+', 'Active users'],
@@ -105,8 +105,8 @@ const LandingPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.1 }}
                 >
-                  <div className="font-display text-2xl font-semibold text-surface-900 dark:text-white">{val}</div>
-                  <div className="text-xs font-semibold uppercase tracking-[0.1em] text-surface-500 dark:text-surface-400">{label}</div>
+                  <div className="font-display text-lg sm:text-xl lg:text-2xl font-semibold text-surface-900 dark:text-white">{val}</div>
+                  <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-surface-500 dark:text-surface-400">{label}</div>
                 </motion.div>
               ))}
             </motion.div>
@@ -117,18 +117,18 @@ const LandingPage = () => {
             initial={{ opacity: 0, x: 30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="relative"
+            className="relative hidden sm:block"
           >
             <div
-              className="bg-white/70 dark:bg-white/[0.08] backdrop-blur-xl rounded-2xl p-8 shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/20 [transform:rotate(2deg)] hover:[transform:rotate(0deg)] transition-transform duration-500 hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]"
+              className="bg-white/70 dark:bg-white/[0.08] backdrop-blur-xl rounded-2xl p-4 sm:p-6 lg:p-8 shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/20 [transform:rotate(2deg)] hover:[transform:rotate(0deg)] transition-transform duration-500 hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]"
             >
-              <div className="flex justify-between items-center mb-6">
-                <span className="font-display text-xl font-semibold text-surface-900 dark:text-white">Dashboard</span>
-                <span className="bg-stitch-secondary-container/10 text-stitch-secondary px-3 py-1 rounded-full text-sm font-bold">Skill Score 82%</span>
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <span className="font-display text-base sm:text-xl font-semibold text-surface-900 dark:text-white">Dashboard</span>
+                <span className="bg-stitch-secondary-container/10 text-stitch-secondary px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-sm font-bold">Skill Score 82%</span>
               </div>
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 h-3 bg-surface-100 dark:bg-white/10 rounded-full overflow-hidden">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div className="flex-1 h-2 sm:h-3 bg-surface-100 dark:bg-white/10 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: '82%' }}
@@ -136,25 +136,25 @@ const LandingPage = () => {
                       className="bg-stitch-primary h-full rounded-full"
                     />
                   </div>
-                  <span className="text-xs font-semibold uppercase tracking-[0.1em] text-surface-500 dark:text-surface-400">Experience 6yr</span>
+                  <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-surface-500 dark:text-surface-400">Experience 6yr</span>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 bg-surface-100/80 dark:bg-white/[0.06] backdrop-blur-sm rounded-xl border border-surface-200 dark:border-white/15 text-center hover:bg-stitch-primary/10 dark:hover:bg-white/15 transition-colors">
-                    <div className="text-stitch-primary font-bold text-xl">87</div>
-                    <div className="text-xs uppercase opacity-60 text-surface-500 dark:text-surface-400">Skill Score</div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                  <div className="p-2 sm:p-3 lg:p-4 bg-surface-100/80 dark:bg-white/[0.06] backdrop-blur-sm rounded-xl border border-surface-200 dark:border-white/15 text-center hover:bg-stitch-primary/10 dark:hover:bg-white/15 transition-colors">
+                    <div className="text-stitch-primary font-bold text-base sm:text-lg lg:text-xl">87</div>
+                    <div className="text-[10px] sm:text-xs uppercase opacity-60 text-surface-500 dark:text-surface-400">Skill Score</div>
                   </div>
-                  <div className="p-4 bg-surface-100/80 dark:bg-white/[0.06] backdrop-blur-sm rounded-xl border border-surface-200 dark:border-white/15 text-center hover:bg-stitch-secondary/10 dark:hover:bg-white/15 transition-colors">
-                    <div className="text-stitch-secondary font-bold text-xl">6</div>
-                    <div className="text-xs uppercase opacity-60 text-surface-500 dark:text-surface-400">Years Exp</div>
+                  <div className="p-2 sm:p-3 lg:p-4 bg-surface-100/80 dark:bg-white/[0.06] backdrop-blur-sm rounded-xl border border-surface-200 dark:border-white/15 text-center hover:bg-stitch-secondary/10 dark:hover:bg-white/15 transition-colors">
+                    <div className="text-stitch-secondary font-bold text-base sm:text-lg lg:text-xl">6</div>
+                    <div className="text-[10px] sm:text-xs uppercase opacity-60 text-surface-500 dark:text-surface-400">Years Exp</div>
                   </div>
-                  <div className="p-4 bg-surface-100/80 dark:bg-white/[0.06] backdrop-blur-sm rounded-xl border border-surface-200 dark:border-white/15 text-center hover:bg-stitch-secondary/10 dark:hover:bg-white/15 transition-colors">
-                    <div className="text-stitch-secondary font-bold text-xl">5</div>
-                    <div className="text-xs uppercase opacity-60 text-surface-500 dark:text-surface-400">Roadmaps</div>
+                  <div className="p-2 sm:p-3 lg:p-4 bg-surface-100/80 dark:bg-white/[0.06] backdrop-blur-sm rounded-xl border border-surface-200 dark:border-white/15 text-center hover:bg-stitch-secondary/10 dark:hover:bg-white/15 transition-colors">
+                    <div className="text-stitch-secondary font-bold text-base sm:text-lg lg:text-xl">5</div>
+                    <div className="text-[10px] sm:text-xs uppercase opacity-60 text-surface-500 dark:text-surface-400">Roadmaps</div>
                   </div>
                 </div>
-                <div className="p-4 bg-stitch-secondary/5 dark:bg-white/[0.06] backdrop-blur-sm border border-stitch-secondary/15 dark:border-white/15 rounded-xl flex items-center gap-3">
-                  <MessageCircle size={20} className="text-stitch-secondary dark:text-stitch-secondary-fixed" />
-                  <p className="text-sm font-medium text-surface-900 dark:text-white">AI Mentor: Focus on system design...</p>
+                <div className="p-3 sm:p-4 bg-stitch-secondary/5 dark:bg-white/[0.06] backdrop-blur-sm border border-stitch-secondary/15 dark:border-white/15 rounded-xl flex items-center gap-2 sm:gap-3">
+                  <MessageCircle size={16} className="text-stitch-secondary dark:text-stitch-secondary-fixed shrink-0" />
+                  <p className="text-xs sm:text-sm font-medium text-surface-900 dark:text-white">AI Mentor: Focus on system design...</p>
                 </div>
               </div>
             </div>
@@ -184,18 +184,18 @@ const LandingPage = () => {
       </section>
 
       {/* ─── FEATURES (Bento Grid) ─── */}
-      <section id="features" className="py-[120px] bg-surface-55 dark:bg-surface-900">
+      <section id="features" className="py-16 sm:py-20 lg:py-[120px] bg-surface-55 dark:bg-surface-900">
         <div className={`${containerClass}`}>
-          <motion.div {...fadeUp()} className="text-center max-w-3xl mx-auto mb-20 space-y-4">
+          <motion.div {...fadeUp()} className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 lg:mb-20 space-y-4">
             <span className="inline-flex items-center gap-2 px-3 py-1 bg-stitch-secondary-container/10 border border-stitch-secondary-container/20 rounded-full">
               <Sparkles size={12} className="text-stitch-secondary" />
               <span className="text-xs font-bold uppercase tracking-wider text-stitch-secondary">Core features</span>
             </span>
-            <h2 className="font-display text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Everything you need to grow</h2>
-            <p className="text-base text-surface-500 dark:text-surface-400">AI-driven tools that analyze, plan, teach, and mentor — all in one place.</p>
+            <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Everything you need to grow</h2>
+            <p className="text-sm sm:text-base text-surface-500 dark:text-surface-400">AI-driven tools that analyze, plan, teach, and mentor — all in one place.</p>
           </motion.div>
 
-          <div className="grid lg:grid-cols-12 gap-4">
+          <div className="grid lg:grid-cols-12 gap-3 sm:gap-4">
             {/* AI Skill Analysis */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -204,13 +204,13 @@ const LandingPage = () => {
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               className="lg:col-span-7 group"
             >
-              <div className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl rounded-3xl p-5 h-full border-t-4 border-t-stitch-primary dark:border-t-stitch-primary flex flex-col justify-between shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 transition-all hover:translate-y-[-8px] hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]">
+              <div className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-5 h-full border-t-4 border-t-stitch-primary dark:border-t-stitch-primary flex flex-col justify-between shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 transition-all hover:translate-y-[-8px] hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]">
                 <div className="space-y-3">
-                  <div className="w-10 h-10 bg-stitch-primary/10 dark:bg-stitch-primary/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                    <Brain size={24} className="text-stitch-primary dark:text-stitch-primary-fixed" />
+                  <div className="w-8 sm:w-10 h-8 sm:h-10 bg-stitch-primary/10 dark:bg-stitch-primary/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center">
+                    <Brain size={20} className="text-stitch-primary dark:text-stitch-primary-fixed" />
                   </div>
-                  <h3 className="font-display text-[22px] leading-[1.3] font-semibold text-surface-900 dark:text-white">AI Skill Analysis</h3>
-                  <p className="text-base leading-relaxed text-surface-500 dark:text-white/60 max-w-md">
+                  <h3 className="font-display text-lg sm:text-[22px] leading-[1.3] font-semibold text-surface-900 dark:text-white">AI Skill Analysis</h3>
+                  <p className="text-sm sm:text-base leading-relaxed text-surface-500 dark:text-white/60 max-w-md">
                     Upload your resume for instant AI-powered skill extraction, gap analysis, and market positioning. Know exactly where you stand.
                   </p>
                   <ul className="space-y-2">
@@ -305,15 +305,15 @@ const LandingPage = () => {
       </section>
 
       {/* ─── HOW IT WORKS ─── */}
-      <section id="how-it-works" className="py-[120px] bg-surface-55 dark:bg-surface-900">
+      <section id="how-it-works" className="py-16 sm:py-20 lg:py-[120px] bg-surface-55 dark:bg-surface-900">
         <div className={`${containerClass}`}>
-          <motion.div {...fadeUp()} className="text-center mb-16 space-y-4">
+          <motion.div {...fadeUp()} className="text-center mb-10 sm:mb-12 lg:mb-16 space-y-4">
             <span className="text-xs font-bold uppercase tracking-[0.1em] text-stitch-primary">How it works</span>
-            <h2 className="font-display text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Four steps to grow</h2>
-            <p className="text-surface-500 dark:text-surface-400">From analysis to career advancement — we guide you every step.</p>
+            <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Four steps to grow</h2>
+            <p className="text-sm sm:text-base text-surface-500 dark:text-surface-400">From analysis to career advancement — we guide you every step.</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-4 gap-8 relative">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 relative">
             <div className="hidden md:block absolute top-1/2 left-0 w-full h-[2px] bg-surface-200 dark:bg-surface-700 -translate-y-1/2 z-0" />
             {[
               { num: '01', icon: Search, title: 'Analyze', desc: 'Upload your resume for AI skill extraction' },
@@ -329,10 +329,10 @@ const LandingPage = () => {
                 transition={{ duration: 0.6, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
                 className="relative z-10 text-center space-y-6"
               >
-                <div className="w-16 h-16 mx-auto bg-white dark:bg-white/10 backdrop-blur-sm rounded-full border-2 border-stitch-primary flex items-center justify-center text-stitch-primary dark:text-stitch-primary-fixed font-bold text-xl shadow-lg transition-transform hover:scale-110">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto bg-white dark:bg-white/10 backdrop-blur-sm rounded-full border-2 border-stitch-primary flex items-center justify-center text-stitch-primary dark:text-stitch-primary-fixed font-bold text-base sm:text-lg md:text-xl shadow-lg transition-transform hover:scale-110">
                   {step.num}
                 </div>
-                <div className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl p-6 rounded-2xl shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 stitch-hover-float">
+                <div className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 stitch-hover-float">
                   <step.icon size={28} className="text-stitch-primary dark:text-stitch-primary-fixed mx-auto mb-3" />
                   <h4 className="font-semibold text-surface-900 dark:text-white mb-2">{step.title}</h4>
                   <p className="text-sm text-surface-500 dark:text-white/60">{step.desc}</p>
@@ -344,12 +344,12 @@ const LandingPage = () => {
       </section>
 
       {/* ─── TESTIMONIALS ─── */}
-      <section className="py-[120px] bg-surface-55 dark:bg-surface-900">
+      <section className="py-16 sm:py-20 lg:py-[120px] bg-surface-55 dark:bg-surface-900">
         <div className={`${containerClass}`}>
-          <motion.div {...fadeUp()} className="flex justify-between items-end mb-16">
+          <motion.div {...fadeUp()} className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 sm:mb-12 lg:mb-16 gap-4">
             <div className="space-y-4">
               <span className="text-xs font-bold uppercase tracking-[0.1em] text-stitch-secondary">Success stories</span>
-              <h2 className="font-display text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Real people, real results</h2>
+              <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Real people, real results</h2>
             </div>
             <div className="hidden md:flex gap-4">
               <div className="w-12 h-12 rounded-full border border-surface-300 dark:border-surface-600 flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-stitch-primary hover:text-white transition-all duration-300 cursor-pointer">
@@ -373,7 +373,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl p-8 rounded-3xl shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 space-y-8 flex flex-col justify-between stitch-hover-float"
+                className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl p-5 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 space-y-5 sm:space-y-6 lg:space-y-8 flex flex-col justify-between stitch-hover-float"
               >
                 <Quote size={24} className="text-surface-300 dark:text-white/30" />
                 <p className="text-base leading-relaxed italic text-surface-900 dark:text-white/80 flex-1">
@@ -398,15 +398,15 @@ const LandingPage = () => {
       </section>
 
       {/* ─── PRICING ─── */}
-      <section id="pricing" className="py-[120px] bg-surface-900 dark:bg-surface-800 text-white rounded-t-[4rem]">
+      <section id="pricing" className="py-16 sm:py-20 lg:py-[120px] bg-surface-900 dark:bg-surface-800 text-white rounded-t-[2rem] lg:rounded-t-[4rem]">
         <div className={`${containerClass}`}>
-          <motion.div {...fadeUp()} className="text-center mb-20 space-y-4">
+          <motion.div {...fadeUp()} className="text-center mb-10 sm:mb-12 lg:mb-20 space-y-4">
             <span className="text-xs font-bold uppercase tracking-[0.1em] text-stitch-primary-fixed">Pricing</span>
-            <h2 className="font-display text-[28px] leading-[1.25] font-semibold text-white">Choose your plan</h2>
-            <p className="text-[#dce2f7]">Start free, upgrade when you need more.</p>
+            <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-white">Choose your plan</h2>
+            <p className="text-sm sm:text-base text-[#dce2f7]">Start free, upgrade when you need more.</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 items-start">
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 items-start">
             {[
               {
                 name: 'Free', price: '$0', period: 'forever', desc: 'Core features to get started',
@@ -431,7 +431,7 @@ const LandingPage = () => {
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -8 }}
-                className={`relative rounded-[2rem] p-10 flex flex-col border transition-shadow duration-300 ${
+                className={`relative rounded-2xl sm:rounded-[2rem] p-5 sm:p-6 lg:p-10 flex flex-col border transition-shadow duration-300 ${
                   plan.popular
                     ? 'bg-white/10 dark:bg-white/[0.06] backdrop-blur-xl border-2 border-stitch-primary md:scale-105 shadow-2xl dark:shadow-[0_0_40px_rgba(255,255,255,0.04)] z-10 hover:shadow-[0_20px_60px_rgba(0,105,72,0.3)] dark:hover:shadow-[0_20px_60px_rgba(0,170,110,0.15)]'
                     : 'bg-white/5 dark:bg-white/[0.04] backdrop-blur-xl border border-white/10 dark:border-white/10 hover:border-white/30 hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]'
@@ -497,24 +497,24 @@ const LandingPage = () => {
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="relative py-[120px] overflow-hidden bg-surface-55 dark:bg-surface-900">
+      <section className="relative py-16 sm:py-20 lg:py-[120px] overflow-hidden bg-surface-55 dark:bg-surface-900">
         <div className={`${containerClass} text-center relative z-10`}>
-          <motion.div {...fadeUp()} className="max-w-3xl mx-auto space-y-8">
-            <h2 className="font-display text-[44px] leading-[1.15] font-bold tracking-tight text-surface-900 dark:text-white">
+          <motion.div {...fadeUp()} className="max-w-3xl mx-auto space-y-5 sm:space-y-6 lg:space-y-8">
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-[44px] leading-[1.15] font-bold tracking-tight text-surface-900 dark:text-white">
               Ready to transform your career?
             </h2>
-            <p className="text-base text-surface-500 dark:text-surface-400">
+            <p className="text-sm sm:text-base text-surface-500 dark:text-surface-400">
               Join thousands of professionals accelerating their growth with AI-powered career guidance.
             </p>
-            <div className="pt-4">
+            <div className="pt-2 sm:pt-4">
               <Link href="/skill-audit">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center gap-3 bg-stitch-primary text-white px-8 py-4 rounded-full font-display text-sm font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+                  className="inline-flex items-center gap-2 sm:gap-3 bg-stitch-primary text-white px-5 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-full font-display text-xs sm:text-sm font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
                 >
                   Start Your Free Skill Audit
-                  <Rocket size={18} />
+                  <Rocket size={16} />
                 </motion.button>
               </Link>
             </div>

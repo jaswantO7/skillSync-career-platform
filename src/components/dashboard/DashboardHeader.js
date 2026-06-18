@@ -61,8 +61,8 @@ const DashboardHeader = () => {
   }
 
   return (
-    <header className="glass-nav px-6 py-3 relative z-40">
-      <div className="flex items-center justify-between">
+    <header className="glass-nav px-3 sm:px-6 py-2 sm:py-3 relative z-40">
+      <div className="flex items-center justify-end sm:justify-between">
         <div className="flex-1 max-w-md hidden sm:block">
           <Input
             placeholder="Search skills, projects, or resources..."
@@ -71,7 +71,7 @@ const DashboardHeader = () => {
           />
         </div>
 
-        <div className="flex items-center space-x-3 ml-6">
+        <div className="flex items-center space-x-1 sm:space-x-3 ml-1 sm:ml-6">
           <Button
             variant="ghost"
             size="sm"
@@ -96,11 +96,12 @@ const DashboardHeader = () => {
             <AnimatePresence>
               {showNotifications && (
                 <motion.div
-                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-surface-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-[60]"
+                  className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-surface-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-[60]"
                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ duration: 0.2 }}
+                  style={{ transformOrigin: 'top right' }}
                 >
                   <div className="px-4 py-2 border-b border-surface-200 dark:border-surface-700">
                     <h3 className="font-medium text-surface-900 dark:text-white">Notifications</h3>
@@ -165,11 +166,12 @@ const DashboardHeader = () => {
             <AnimatePresence>
               {showUserMenu && (
                 <motion.div
-              className="absolute right-0 mt-2 w-56 bg-white dark:bg-surface-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-[60]"
+              className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-surface-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 py-2 z-[60]"
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.2 }}
+              style={{ transformOrigin: 'top right' }}
             >
               <div className="px-4 py-3 border-b border-surface-200 dark:border-surface-700">
                 <p className="font-medium text-surface-900 dark:text-white">

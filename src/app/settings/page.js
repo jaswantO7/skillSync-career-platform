@@ -230,7 +230,7 @@ const SettingsPage = () => {
                     </div>
                   </div>
                   <div className="text-center sm:text-left pb-2">
-                    <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{form.name || 'Your Name'}</h1>
+                    <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-surface-900 dark:text-white">{form.name || 'Your Name'}</h1>
                     <p className="text-surface-600 dark:text-surface-400">{form.role || 'Set your current role'}</p>
                     <div className="flex items-center justify-center sm:justify-start space-x-4 mt-2 text-sm text-surface-500 dark:text-surface-400">
                       {form.location && (

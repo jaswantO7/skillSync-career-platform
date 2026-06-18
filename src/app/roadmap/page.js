@@ -377,7 +377,7 @@ const RoadmapContent = () => {
             >
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2">
                     {roadmap.title || `Path to ${roadmap.targetRole}`}
                   </h1>
                   <p className="text-surface-600 dark:text-surface-400">

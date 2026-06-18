@@ -346,10 +346,10 @@ const ProjectsPage = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2">
                     Portfolio Projects
                   </h1>
-                  <p className="text-surface-600 dark:text-surface-400">
+                  <p className="text-sm sm:text-base text-surface-600 dark:text-surface-400">
                     AI-suggested projects to build your portfolio and demonstrate your skills
                   </p>
                 </div>

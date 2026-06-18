@@ -333,10 +333,10 @@ const CareerPathPage = () => {
               transition={{ duration: 0.6 }}
               className="mb-8"
             >
-              <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-2">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2">
                 Career Path Recommendations
               </h1>
-              <p className="text-surface-600 dark:text-surface-400">
+              <p className="text-sm sm:text-base text-surface-600 dark:text-surface-400">
                 AI-powered career progression paths tailored to your skills and goals
               </p>
             </motion.div>

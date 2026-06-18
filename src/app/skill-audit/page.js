@@ -208,8 +208,8 @@ const SkillAuditPage = () => {
                 <FileText size={13} />
                 <span>Skill Audit</span>
               </span>
-              <h1 className="text-3xl font-bold text-surface-900 dark:text-white mb-4">AI-Powered Skill Audit</h1>
-              <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2 sm:mb-4">AI-Powered Skill Audit</h1>
+              <p className="text-sm sm:text-base md:text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
                 Upload your resume or share your LinkedIn profile to get instant insights into your skills, experience, and career potential.
               </p>
             </motion.div>

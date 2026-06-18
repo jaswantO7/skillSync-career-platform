@@ -208,7 +208,7 @@ const Sidebar = () => {
       {/* Floating hamburger for mobile */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-40 md:hidden w-9 h-9 rounded-lg bg-white/90 dark:bg-surface-800/90 backdrop-blur-sm border border-surface-200 dark:border-surface-700 flex items-center justify-center text-surface-600 dark:text-surface-400 shadow-lg"
+        className={`fixed top-4 left-4 z-50 md:hidden w-9 h-9 rounded-lg bg-white/90 dark:bg-surface-800/90 backdrop-blur-sm border border-surface-200 dark:border-surface-700 flex items-center justify-center text-surface-600 dark:text-surface-400 shadow-lg ${mobileOpen ? 'hidden' : ''}`}
         aria-label="Open sidebar"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
