@@ -32,7 +32,10 @@ const MentorPage = () => {
   const [isTyping, setIsTyping] = useState(false)
   const [loading, setLoading] = useState(true)
   const [usage, setUsage] = useState(null)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const messagesEndRef = useRef(null)
+  const scrollContainerRef = useRef(null)
+  const lastScrollY = useRef(0)
   const fetchedRef = useRef(false)
   const { user, userProfile, getAuthToken, loading: authLoading } = useAuth()
   const { stats, roadmap } = useProgress()
@@ -58,6 +61,22 @@ const MentorPage = () => {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const handleScroll = () => {
+      const currentY = el.scrollTop
+      if (currentY > lastScrollY.current + 10) {
+        setSidebarCollapsed(true)
+      } else if (currentY < lastScrollY.current - 10 && currentY < 50) {
+        setSidebarCollapsed(false)
+      }
+      lastScrollY.current = currentY
+    }
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => el.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const initializeChat = async () => {
     try {
@@ -208,8 +227,8 @@ const MentorPage = () => {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <main className="flex-1 flex overflow-hidden p-3 sm:p-4 pt-16 lg:pt-0">
-          <div className="flex-1 flex flex-col">
+        <main className="flex-1 flex overflow-hidden min-h-0">
+          <div className="flex-1 flex flex-col pt-16 lg:pt-0 min-h-0">
             {userProfile?.subscriptionPlan === 'free' && (
               <div className="bg-gradient-to-r from-emerald-600 to-violet-600 px-4 py-3">
                 <div className="flex items-start sm:items-center justify-between text-white text-sm mb-2 gap-2">
@@ -230,32 +249,57 @@ const MentorPage = () => {
               </div>
             )}
 
-            <div className="glass border-b border-surface-200/50 dark:border-surface-700/30 p-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-violet-600 rounded-full flex items-center justify-center shadow-md">
-                  <Bot className="w-6 h-6 text-white" />
+            <div className="glass border-b border-surface-200/50 dark:border-surface-700/30 p-3 sm:p-4">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-br from-emerald-500 to-violet-600 rounded-full flex items-center justify-center shadow-md shrink-0">
+                  <Bot className="w-4 sm:w-6 h-4 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-surface-900 dark:text-white">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm sm:text-lg font-semibold text-surface-900 dark:text-white truncate">
                     Alex - AI Career Mentor
                   </h2>
-                  <p className="text-sm text-surface-500 dark:text-surface-400">
+                  <p className="text-xs sm:text-sm text-surface-500 dark:text-surface-400 truncate hidden sm:block">
                     Your personal career growth companion
                   </p>
                 </div>
-                <div className="flex-1"></div>
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-1.5 text-xs text-surface-400">
+                <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+                  <div className="flex items-center space-x-1 text-xs text-surface-400">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                    <span>Online</span>
+                    <span className="hidden sm:inline">Online</span>
                   </div>
-                  <span className="text-xs text-surface-400">·</span>
-                  <span className="text-xs text-surface-400">Saved</span>
+                  <span className="text-xs text-surface-400 hidden sm:inline">·</span>
+                  <span className="text-xs text-surface-400 hidden sm:inline">Saved</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-surface-50/50 dark:bg-surface-950/50">
+            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-surface-50/50 dark:bg-surface-950/50 min-h-0">
+              {messages.length <= 1 && (
+                <div className="p-4 rounded-xl bg-white dark:bg-surface-800/50 border border-surface-200/50 dark:border-surface-700/30">
+                  <p className="text-sm text-surface-500 dark:text-surface-400 mb-3">
+                    Quick questions to get started:
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {quickPrompts.map((prompt, index) => {
+                      const Icon = prompt.icon
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => handleQuickPrompt(prompt)}
+                          className="flex items-center space-x-2 p-3 bg-surface-100 dark:bg-surface-800/50 hover:bg-surface-200 dark:hover:bg-surface-700/50 rounded-xl text-left transition-all"
+                          disabled={isTyping || hasReachedLimit}
+                        >
+                          <Icon className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span className="text-sm text-surface-700 dark:text-surface-300 truncate">
+                            {prompt.title}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               <AnimatePresence>
                 {messages.map((message) => (
                   <motion.div
@@ -324,32 +368,6 @@ const MentorPage = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {messages.length <= 1 && (
-              <div className="p-4 border-t border-surface-200/50 dark:border-surface-700/30 bg-white/50 dark:bg-surface-900/50">
-                <p className="text-sm text-surface-500 dark:text-surface-400 mb-3">
-                  Quick questions to get started:
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {quickPrompts.map((prompt, index) => {
-                    const Icon = prompt.icon
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => handleQuickPrompt(prompt)}
-                        className="flex items-center space-x-2 p-3 bg-surface-100 dark:bg-surface-800/50 hover:bg-surface-200 dark:hover:bg-surface-700/50 rounded-xl text-left transition-all"
-                        disabled={isTyping || hasReachedLimit}
-                      >
-                        <Icon className="w-4 h-4 text-emerald-600" />
-                        <span className="text-sm text-surface-700 dark:text-surface-300">
-                          {prompt.title}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
             {hasReachedLimit ? (
               <div className="glass border-t border-surface-200/50 dark:border-surface-700/30 p-6 text-center">
                 <Zap size={24} className="text-yellow-500 mx-auto mb-2" />
@@ -363,14 +381,13 @@ const MentorPage = () => {
             <div className="glass border-t border-surface-200/50 dark:border-surface-700/30 p-4">
               <div className="flex items-end space-x-3">
                 <div className="flex-1">
-                  <textarea
+                  <input
+                    type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     placeholder="Ask me anything about your career, skills, or professional growth..."
-                    rows={1}
-                    className="w-full px-4 py-3 rounded-xl border border-surface-200 dark:border-surface-600/50 bg-white dark:bg-surface-800/60 text-surface-900 dark:text-surface-100 placeholder-surface-400 dark:placeholder-surface-500 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all duration-200 resize-none backdrop-blur-sm"
-                    style={{ minHeight: '48px', maxHeight: '120px' }}
+                    className="w-full px-4 py-3 rounded-xl border border-surface-200 dark:border-surface-600/50 bg-white dark:bg-surface-800/60 text-surface-900 dark:text-surface-100 placeholder-surface-400 dark:placeholder-surface-500 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all duration-200 backdrop-blur-sm"
                     disabled={isTyping || hasReachedLimit}
                   />
                 </div>
@@ -382,15 +399,27 @@ const MentorPage = () => {
                   <Send size={20} />
                 </Button>
               </div>
-              <p className="text-xs text-surface-500 dark:text-surface-400 mt-2">
-                Press Enter to send, Shift+Enter for new line
+              <p className="text-xs text-surface-500 dark:text-surface-400 mt-2 hidden sm:block">
+                Press Enter to send
               </p>
             </div>
             )}
           </div>
 
-          <div className="w-80 bg-white/50 dark:bg-surface-900/50 backdrop-blur-xl border-l border-surface-200/50 dark:border-surface-700/30 p-4 overflow-y-auto hidden lg:block">
-            <div className="space-y-6">
+          <div className={`${sidebarCollapsed ? 'w-14' : 'w-80'} bg-white/50 dark:bg-surface-900/50 backdrop-blur-xl border-l border-surface-200/50 dark:border-surface-700/30 overflow-y-auto hidden lg:block transition-all duration-300`}>
+            <div className="p-3 border-b border-surface-200/50 dark:border-surface-700/30 flex items-center justify-center">
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="w-8 h-8 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 flex items-center justify-center text-surface-500 dark:text-surface-400 transition-colors"
+                title={sidebarCollapsed ? 'Expand details' : 'Collapse details'}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}>
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+            </div>
+            {!sidebarCollapsed && (
+            <div className="p-4 space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -481,6 +510,7 @@ const MentorPage = () => {
                 </CardContent>
               </Card>
             </div>
+            )}
           </div>
         </main>
       </div>

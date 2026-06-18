@@ -405,34 +405,28 @@ const CareerPathPage = () => {
                 transition={{ duration: 0.6, delay: 0.05 }}
                 className="mb-6"
               >
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-800 rounded-xl flex items-center justify-center">
-                      <Target className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4 sm:p-5 flex items-start sm:items-center justify-between flex-col sm:flex-row gap-3">
+                  <div className="flex items-start space-x-3 min-w-0 flex-1">
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-emerald-100 dark:bg-emerald-800 rounded-xl flex items-center justify-center shrink-0">
+                      <Target className="w-5 sm:w-6 h-5 sm:h-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Current Path</p>
-                      <p className="text-lg font-semibold text-surface-900 dark:text-white">{userProfile.selectedCareerPath.targetRole}</p>
-                      <div className="flex items-center space-x-3 mt-1 text-sm text-surface-600 dark:text-surface-400">
+                      <p className="text-base sm:text-lg font-semibold text-surface-900 dark:text-white truncate">{userProfile.selectedCareerPath.targetRole}</p>
+                      <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-1 text-sm text-surface-600 dark:text-surface-400">
                         {userProfile.selectedCareerPath.difficulty && (
                           <span className="capitalize">{userProfile.selectedCareerPath.difficulty}</span>
                         )}
                         {userProfile.selectedCareerPath.timeToAchieve && (
-                          <>
-                            <span>·</span>
-                            <span>{userProfile.selectedCareerPath.timeToAchieve}</span>
-                          </>
+                          <><span>·</span><span>{userProfile.selectedCareerPath.timeToAchieve}</span></>
                         )}
                         {(userProfile.selectedCareerPath.requiredSkills || []).length > 0 && (
-                          <>
-                            <span>·</span>
-                            <span>{userProfile.selectedCareerPath.requiredSkills.length} skills</span>
-                          </>
+                          <><span>·</span><span>{userProfile.selectedCareerPath.requiredSkills.length} skills</span></>
                         )}
                       </div>
                     </div>
                   </div>
-                  <Button size="sm" variant="secondary" onClick={() => router.push('/roadmap')}>
+                  <Button size="sm" variant="secondary" onClick={() => router.push('/roadmap')} className="w-full sm:w-auto shrink-0">
                     View Roadmap
                     <ArrowRight size={16} className="ml-2" />
                   </Button>
@@ -451,19 +445,19 @@ const CareerPathPage = () => {
                 <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-3">
                   Looking for a specific career path?
                 </label>
-                <div className="flex space-x-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="text"
                     value={customPath}
                     onChange={(e) => setCustomPath(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleCustomSearch()}
                     placeholder="e.g. Cloud Architect, AI Engineer, DevOps Lead, Product Manager..."
-                    className="flex-1 px-4 py-3 rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 dark:placeholder-surface-500 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 dark:placeholder-surface-500 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
                   />
                   <Button
                     onClick={handleCustomSearch}
                     loading={searchLoading}
-                    className="px-6"
+                    className="w-full sm:w-auto px-6 justify-center"
                   >
                     <Search size={18} className="mr-2" />
                     Search
@@ -473,7 +467,7 @@ const CareerPathPage = () => {
             </motion.div>
 
             {/* Career Paths Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-8">
               {recommendations.map((path, index) => (
                 <motion.div
                   key={path._id}
@@ -562,11 +556,11 @@ const CareerPathPage = () => {
                         <div className="flex-1" />
 
                         {/* Action Buttons */}
-                        <div className="flex space-x-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="flex-1"
+                            className="w-full sm:flex-1"
                             onClick={(e) => {
                               e.stopPropagation()
                               setSelectedPathForDetails(path)
@@ -579,7 +573,7 @@ const CareerPathPage = () => {
                           <Button
                             variant={selectedPath?._id === path._id ? 'primary' : 'secondary'}
                             size="sm"
-                            className="flex-1"
+                            className="w-full sm:flex-1"
                             onClick={(e) => {
                               e.stopPropagation()
                               handleGenerateRoadmap(path)
@@ -669,11 +663,11 @@ const CareerPathPage = () => {
                           <Star className="w-5 h-5 mr-2 text-emerald-600" />
                           Skills to Develop
                         </h3>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {selectedPath.requiredSkills.map((skill, index) => (
                             <div key={index} className="flex items-center space-x-2 p-2 bg-surface-50 dark:bg-surface-800 rounded-lg">
-                              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                              <span className="text-sm text-surface-700 dark:text-surface-300">
+                              <div className="w-2 h-2 bg-emerald-500 rounded-full shrink-0"></div>
+                              <span className="text-sm text-surface-700 dark:text-surface-300 truncate">
                                 {skill}
                               </span>
                             </div>
@@ -716,14 +710,14 @@ const CareerPathPage = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-surface-50 dark:bg-surface-800 rounded-xl">
                 <p className="text-xs text-surface-500 dark:text-surface-400 mb-1">Time to Achieve</p>
                 <p className="text-lg font-semibold text-surface-900 dark:text-white">{selectedPathForDetails.timeToAchieve}</p>
               </div>
               <div className="p-4 bg-surface-50 dark:bg-surface-800 rounded-xl">
                 <p className="text-xs text-surface-500 dark:text-surface-400 mb-1">Salary Range</p>
-                <p className="text-lg font-semibold text-surface-900 dark:text-white">{selectedPathForDetails.salaryRange}</p>
+                <p className="text-lg font-semibold text-surface-900 dark:text-white break-words">{selectedPathForDetails.salaryRange}</p>
               </div>
             </div>
 
@@ -751,23 +745,24 @@ const CareerPathPage = () => {
             {/* Skills */}
             <div>
               <h4 className="text-xs font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-wider mb-3">Skills to Develop</h4>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {(selectedPathForDetails.requiredSkills || []).map((skill, index) => (
                   <div key={index} className="flex items-center space-x-2 p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                    <span className="text-sm text-surface-700 dark:text-surface-300">{skill}</span>
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full shrink-0"></div>
+                    <span className="text-sm text-surface-700 dark:text-surface-300 truncate">{skill}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-2">
-              <Button variant="secondary" onClick={() => setShowPathDetails(false)}>Close</Button>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+              <Button variant="secondary" onClick={() => setShowPathDetails(false)} className="w-full sm:w-auto">Close</Button>
               <Button
                 onClick={() => {
                   setShowPathDetails(false)
                   handleSelectPath(selectedPathForDetails)
                 }}
+                className="w-full sm:w-auto justify-center"
               >
                 Select This Path
                 <ArrowRight size={16} className="ml-2" />

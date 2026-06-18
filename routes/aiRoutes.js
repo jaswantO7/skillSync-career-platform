@@ -408,13 +408,16 @@ router.post(
       await roadmap.save();
 
       // Deactivate any previously active roadmaps
+      const hadExisting = await Roadmap.countDocuments({ userId: req.user._id, status: 'active', _id: { $ne: roadmap._id } })
       await Roadmap.updateMany(
         { userId: req.user._id, status: 'active', _id: { $ne: roadmap._id } },
         { status: 'paused' }
       );
 
-      // Track usage
-      await Usage.increment(req.user._id, 'roadmapsGenerated')
+      // Only increment usage if this is a new roadmap (not a replacement)
+      if (hadExisting === 0) {
+        await Usage.increment(req.user._id, 'roadmapsGenerated')
+      }
 
       res.json({
         success: true,

@@ -451,27 +451,27 @@ const RoadmapContent = () => {
                   <CardTitle>Overall Progress</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-emerald-600 mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-emerald-600 mb-1">
                         {roadmap.overallProgress ?? 0}%
                       </div>
                       <p className="text-sm text-surface-600 dark:text-surface-400">Complete</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-surface-900 dark:text-white mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-white mb-1">
                         {roadmap.duration?.months ?? 6}
                       </div>
                       <p className="text-sm text-surface-600 dark:text-surface-400">Months</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-surface-900 dark:text-white mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-white mb-1">
                         {roadmap.duration?.hoursPerWeek ?? 10}
                       </div>
                       <p className="text-sm text-surface-600 dark:text-surface-400">Hours/Week</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-surface-900 dark:text-white mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-white mb-1">
                         {roadmap.duration?.totalHours ?? 240}
                       </div>
                       <p className="text-sm text-surface-600 dark:text-surface-400">Total Hours</p>
@@ -495,26 +495,26 @@ const RoadmapContent = () => {
                 >
                   <Card>
                     <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-start space-x-3 min-w-0 flex-1">
+                          <div className="w-8 sm:w-10 h-8 sm:h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center shrink-0">
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs sm:text-sm">
                               {month.month ?? index + 1}
                             </span>
                           </div>
-                          <div>
-                            <CardTitle className="text-xl">{month.title}</CardTitle>
-                            <p className="text-surface-600 dark:text-surface-400 text-sm mt-1">
+                          <div className="min-w-0">
+                            <CardTitle className="text-base sm:text-lg break-words">{month.title}</CardTitle>
+                            <p className="text-surface-600 dark:text-surface-400 text-xs sm:text-sm mt-0.5 break-words">
                               {month.focus}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2 shrink-0 w-full sm:w-auto justify-between sm:justify-end">
                           <Badge className={getStatusColor(month.status)} size="sm">
                             {month.status.replace('_', ' ')}
                           </Badge>
                           <div className="text-right">
-                            <div className="text-lg font-semibold text-surface-900 dark:text-white">
+                            <div className="text-sm sm:text-base font-semibold text-surface-900 dark:text-white">
                               {month.progress ?? 0}%
                             </div>
                             <div className="text-xs text-surface-500">Complete</div>
@@ -524,7 +524,7 @@ const RoadmapContent = () => {
                     </CardHeader>
                     
                     <CardContent>
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                         {/* Resources */}
                         <div className="lg:col-span-2">
                           <h4 className="font-semibold text-surface-900 dark:text-white mb-4 flex items-center">
@@ -541,36 +541,39 @@ const RoadmapContent = () => {
                                     : 'glass-card border-surface-200 dark:border-surface-700/50 hover:shadow-md'
                                 }`}
                               >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-2">
-                                      {getResourceTypeIcon(resource.type)}
-                                      <h5 className="font-medium text-surface-900 dark:text-white">
-                                        {resource.title}
-                                      </h5>
-                                      {resource.url && (
-                                        <a
-                                          href={resource.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-emerald-600 hover:text-emerald-700"
-                                        >
-                                          <ExternalLink size={16} />
-                                        </a>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center space-x-4 text-sm text-surface-600 dark:text-surface-400">
-                                      <span>{resource.provider}</span>
-                                      <span>•</span>
-                                      <span>{resource.duration}</span>
-                                      <span>•</span>
-                                      <Badge variant="outline" size="xs">
-                                        {resource.difficulty}
-                                      </Badge>
-                                      {getCostBadge(resource)}
-                                    </div>
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                <div className="flex items-start space-x-2 mb-2 min-w-0">
+                                  {getResourceTypeIcon(resource.type)}
+                                  <h5 className="font-medium text-surface-900 dark:text-white truncate min-w-0">
+                                    {resource.title}
+                                  </h5>
+                                  {resource.url && (
+                                    <a
+                                      href={resource.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-emerald-600 hover:text-emerald-700 shrink-0"
+                                    >
+                                      <ExternalLink size={16} />
+                                    </a>
+                                  )}
+                                </div>
+                                <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-sm text-surface-600 dark:text-surface-400">
+                                  <span className="truncate max-w-[160px] sm:max-w-[240px]">{resource.provider}</span>
+                                  <span className="hidden sm:inline">·</span>
+                                  <span className="hidden sm:inline">{resource.duration}</span>
+                                  <span className="hidden sm:inline">·</span>
+                                  <Badge variant="outline" size="xs" className="shrink-0">
+                                    {resource.difficulty}
+                                  </Badge>
+                                  {getCostBadge(resource)}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-x-2 mt-1 sm:hidden text-xs text-surface-500 dark:text-surface-400">
+                                  <span>{resource.duration}</span>
+                                </div>
                                   </div>
-                                  <div className="ml-4">
+                                  <div className="shrink-0">
                                     {resource.completed ? (
                                       <CheckCircle className="w-6 h-6 text-green-600" />
                                     ) : (
@@ -615,7 +618,7 @@ const RoadmapContent = () => {
                               {(month.milestones || []).map((milestone, milestoneIndex) => (
                                 <div key={milestoneIndex} className="flex items-start space-x-2">
                                   <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>
-                                  <p className="text-sm text-surface-600 dark:text-surface-400">
+                                  <p className="text-sm text-surface-600 dark:text-surface-400 min-w-0 break-words">
                                     {milestone}
                                   </p>
                                 </div>
@@ -661,12 +664,12 @@ const RoadmapContent = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {(roadmap.keyMilestones || []).map((milestone, index) => (
                       <div key={index} className="flex items-center space-x-3 p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
-                        <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center shrink-0">
                           <span className="text-emerald-600 dark:text-emerald-400 text-sm font-medium">
                             {index + 1}
                           </span>
                         </div>
-                        <p className="text-surface-700 dark:text-surface-300">
+                        <p className="text-surface-700 dark:text-surface-300 min-w-0 break-words">
                           {milestone}
                         </p>
                       </div>
@@ -674,7 +677,7 @@ const RoadmapContent = () => {
                   </div>
                   
                   <div className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                    <p className="text-emerald-800 dark:text-emerald-200">
+                    <p className="text-emerald-800 dark:text-emerald-200 break-words">
                       <strong>Expected Outcome:</strong> {roadmap.estimatedOutcome}
                     </p>
                   </div>

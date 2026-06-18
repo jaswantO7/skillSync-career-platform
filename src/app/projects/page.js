@@ -341,7 +341,7 @@ const ProjectsPage = () => {
               transition={{ duration: 0.6 }}
               className="mb-8"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2">
                     Portfolio Projects
@@ -350,7 +350,7 @@ const ProjectsPage = () => {
                     AI-suggested projects to build your portfolio and demonstrate your skills
                   </p>
                 </div>
-                <Button onClick={handleRequestNewProject}>
+                <Button onClick={handleRequestNewProject} className="w-full sm:w-auto shrink-0 justify-center">
                   <Plus size={20} className="mr-2" />
                   Request New Project
                 </Button>
@@ -364,9 +364,11 @@ const ProjectsPage = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="mb-6"
             >
-              <div className="flex items-center space-x-4">
-                <Filter className="w-5 h-5 text-surface-500" />
-                <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="flex items-center space-x-2 shrink-0">
+                  <Filter className="w-5 h-5 text-surface-500" />
+                </div>
+                <div className="flex flex-wrap gap-2">
                   {[
                     { key: 'all', label: 'All Projects' },
                     { key: 'suggested', label: 'Suggested' },
@@ -376,7 +378,7 @@ const ProjectsPage = () => {
                     <button
                       key={key}
                       onClick={() => setFilter(key)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                         filter === key
                           ? 'bg-emerald-600 text-white'
                           : 'bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-300 hover:bg-surface-200 dark:hover:bg-surface-700'
@@ -397,21 +399,23 @@ const ProjectsPage = () => {
                 transition={{ duration: 0.6, delay: 0.12 }}
                 className="mb-6"
               >
-                <div className="flex items-center space-x-3">
-                  <Map className="w-5 h-5 text-surface-500" />
-                  <span className="text-sm text-surface-600 dark:text-surface-400">Base projects on:</span>
-                  <div className="relative">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <Map className="w-5 h-5 text-surface-500" />
+                    <span className="text-sm text-surface-600 dark:text-surface-400">Base projects on:</span>
+                  </div>
+                  <div className="relative w-full sm:w-auto">
                     <button
                       onClick={() => setShowRoadmapPicker(!showRoadmapPicker)}
-                      className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-sm text-surface-700 dark:text-surface-300 transition-all"
+                      className="flex items-center justify-between space-x-2 px-3 py-1.5 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-sm text-surface-700 dark:text-surface-300 transition-all w-full sm:w-auto"
                     >
-                      <span>{projectRoadmap?.title || 'Default (Active Roadmap)'}</span>
-                      <ChevronDown size={14} className={`transition-transform ${showRoadmapPicker ? 'rotate-180' : ''}`} />
+                      <span className="truncate">{projectRoadmap?.title || 'Default (Active Roadmap)'}</span>
+                      <ChevronDown size={14} className={`shrink-0 transition-transform ${showRoadmapPicker ? 'rotate-180' : ''}`} />
                     </button>
                     {showRoadmapPicker && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setShowRoadmapPicker(false)} />
-                        <div className="absolute left-0 mt-1 w-64 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 z-20 py-1">
+                        <div className="absolute left-0 mt-1 w-full sm:w-64 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-700 z-20 py-1">
                           <button
                             onClick={() => { setSelectedRoadmapId(null); setShowRoadmapPicker(false); fetchProjects(null) }}
                             className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-50 dark:hover:bg-surface-700/50 ${!selectedRoadmapId ? 'bg-emerald-50 dark:bg-emerald-900/20 font-medium' : ''}`}
@@ -437,7 +441,7 @@ const ProjectsPage = () => {
             )}
 
             {/* Projects Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {filteredProjects.map((project, index) => (
                 <motion.div
                   key={project._id}
@@ -447,12 +451,14 @@ const ProjectsPage = () => {
                 >
                   <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-200">
                     <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3">
-                          {getProjectIcon(project.technologies)}
-                          <div>
-                            <CardTitle className="text-lg">{project.title}</CardTitle>
-                            <div className="flex items-center space-x-2 mt-1">
+                      <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
+                        <div className="flex items-start space-x-3 min-w-0 flex-1">
+                          <div className="shrink-0">
+                            {getProjectIcon(project.technologies)}
+                          </div>
+                          <div className="min-w-0">
+                            <CardTitle className="text-base sm:text-lg break-words">{project.title}</CardTitle>
+                            <div className="flex items-center flex-wrap gap-2 mt-0.5">
                               <Badge className={getStatusColor(project.status)} size="sm">
                                 {project.status}
                               </Badge>
@@ -462,9 +468,9 @@ const ProjectsPage = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm text-surface-500 dark:text-surface-400">
-                            <Clock size={16} className="inline mr-1" />
+                        <div className="text-left sm:text-right shrink-0">
+                          <div className="text-xs sm:text-sm text-surface-500 dark:text-surface-400">
+                            <Clock size={14} className="inline mr-1" />
                             {project.estimatedHours || project.estimatedDuration?.value || 'N/A'}{project.estimatedHours ? 'h' : (project.estimatedDuration?.unit || 'h')}
                           </div>
                         </div>
@@ -675,7 +681,7 @@ const ProjectsPage = () => {
             )}
 
             {/* Meta Info Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {selectedProject.difficulty && (
               <div>
                 <h4 className="text-xs font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-wider mb-1">Difficulty</h4>
@@ -697,7 +703,7 @@ const ProjectsPage = () => {
               {selectedProject.targetRole && (
               <div>
                 <h4 className="text-xs font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-wider mb-1">Target Role</h4>
-                <p className="text-sm text-surface-700 dark:text-surface-300">{selectedProject.targetRole}</p>
+                <p className="text-sm text-surface-700 dark:text-surface-300 break-words">{selectedProject.targetRole}</p>
               </div>
               )}
             </div>
@@ -823,14 +829,14 @@ const ProjectsPage = () => {
 
             {/* Dates */}
             {(selectedProject.startDate || selectedProject.completedDate) && (
-            <div className="grid grid-cols-2 gap-4 text-sm text-surface-500 dark:text-surface-400">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-surface-500 dark:text-surface-400">
               {selectedProject.startDate && <p>Started: {new Date(selectedProject.startDate).toLocaleDateString()}</p>}
               {selectedProject.completedDate && <p>Completed: {new Date(selectedProject.completedDate).toLocaleDateString()}</p>}
             </div>
             )}
 
-            <div className="flex justify-end pt-2">
-              <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>Close</Button>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+              <Button variant="secondary" onClick={() => setShowDetailsModal(false)} className="w-full sm:w-auto">Close</Button>
             </div>
           </div>
         )}
