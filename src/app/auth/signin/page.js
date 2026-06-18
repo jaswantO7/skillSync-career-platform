@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/Card'
 import toast from 'react-hot-toast'
 
 const SignInPage = () => {
@@ -77,7 +77,7 @@ const SignInPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stitch-primary/5 via-white to-stitch-secondary/5 dark:from-surface-950 dark:via-surface-950 dark:to-surface-900 flex items-center justify-center p-3 sm:p-4">
+    <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center p-3 sm:p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -140,18 +140,7 @@ const SignInPage = () => {
                 </button>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember"
-                    type="checkbox"
-                    className="h-4 w-4 text-stitch-primary focus:ring-stitch-primary/30 border-surface-300 rounded"
-                  />
-                  <label htmlFor="remember" className="ml-2 block text-sm text-surface-700 dark:text-surface-300">
-                    Remember me
-                  </label>
-                </div>
-                
+              <div className="flex justify-end">
                 <Link
                   href="/auth/reset-password"
                   className="text-sm text-stitch-primary hover:text-stitch-primary/80 dark:text-stitch-primary-fixed"
@@ -177,7 +166,7 @@ const SignInPage = () => {
                   <div className="w-full border-t border-surface-300 dark:border-surface-600" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white dark:bg-surface-800 text-surface-500">
+                  <span className="px-2 bg-white dark:bg-surface-900 text-surface-500">
                     Or continue with
                   </span>
                 </div>

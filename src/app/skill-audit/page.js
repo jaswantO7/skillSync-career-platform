@@ -6,7 +6,6 @@ import { Upload, FileText, Link2, ArrowRight, CheckCircle, Loader, Clock, Trash2
 import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
 import Sidebar from '@/components/dashboard/Sidebar'
-import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import FileUploader from '@/components/skill-audit/FileUploader'
 import SkillGraph from '@/components/skill-audit/SkillGraph'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
@@ -200,8 +199,7 @@ const SkillAuditPage = () => {
     <div className="flex h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <DashboardHeader />
-        <main className="flex-1 overflow-y-auto p-2">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pt-16 lg:pt-0">
           <div className="max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-8">
               <span className="pill-emerald mb-4 inline-flex">
@@ -215,7 +213,30 @@ const SkillAuditPage = () => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="mb-8">
-              <div className="flex items-center justify-center space-x-8">
+              {/* Mobile: compact step labels */}
+              <div className="flex sm:hidden items-start justify-center gap-0">
+                {steps.map((stepItem, index) => (
+                  <div key={stepItem.number} className="flex items-start">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                        step >= stepItem.number ? 'bg-emerald-600 text-white shadow-sm' : 'bg-surface-200 dark:bg-surface-700 text-surface-400'
+                      }`}>
+                        {step > stepItem.number ? <CheckCircle size={14} /> : stepItem.number}
+                      </div>
+                      <span className={`mt-1 text-[10px] font-semibold uppercase tracking-tight whitespace-nowrap ${
+                        step >= stepItem.number ? 'text-emerald-600 dark:text-emerald-400' : 'text-surface-400'
+                      }`}>
+                        {stepItem.title}
+                      </span>
+                    </div>
+                    {index < steps.length - 1 && (
+                      <div className={`w-8 h-0.5 mt-4 mx-1.5 ${step > stepItem.number ? 'bg-emerald-500' : 'bg-surface-200 dark:bg-surface-700'}`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* Desktop: full step indicator */}
+              <div className="hidden sm:flex items-center justify-center">
                 {steps.map((stepItem, index) => (
                   <div key={stepItem.number} className="flex items-center">
                     <div className="flex flex-col items-center">
@@ -239,39 +260,39 @@ const SkillAuditPage = () => {
 
             {step === 1 && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-                <Card className="max-w-2xl mx-auto">
+                <Card className="max-w-2xl mx-auto overflow-hidden">
                   <CardHeader><CardTitle className="text-center">Choose Upload Method</CardTitle></CardHeader>
                   <CardContent>
-                    <div className="flex space-x-4 mb-6">
+                    <div className="flex flex-col sm:flex-row gap-3 mb-6">
                       <button onClick={() => setUploadMethod('file')}
-                        className={`flex-1 p-4 rounded-xl border-2 transition-all ${
+                        className={`flex-1 p-3 sm:p-4 rounded-xl border-2 transition-all ${
                           uploadMethod === 'file'
                             ? 'border-emerald-500/50 bg-emerald-50 dark:bg-emerald-900/20 shadow-sm'
                             : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
                         }`}>
-                        <FileText className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
-                        <p className="font-medium text-surface-900 dark:text-white">Upload Resume</p>
-                        <p className="text-sm text-surface-500 dark:text-surface-400">PDF or text file</p>
+                        <FileText className="w-6 sm:w-8 h-6 sm:h-8 mx-auto mb-1.5 text-emerald-600" />
+                        <p className="font-medium text-sm sm:text-base text-surface-900 dark:text-white">Upload Resume</p>
+                        <p className="text-xs sm:text-sm text-surface-500 dark:text-surface-400">PDF or text file</p>
                       </button>
                       <button onClick={() => setUploadMethod('linkedin')}
-                        className={`flex-1 p-4 rounded-xl border-2 transition-all ${
+                        className={`flex-1 p-3 sm:p-4 rounded-xl border-2 transition-all ${
                           uploadMethod === 'linkedin'
                             ? 'border-emerald-500/50 bg-emerald-50 dark:bg-emerald-900/20 shadow-sm'
                             : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
                         }`}>
-                        <Link2 className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
-                        <p className="font-medium text-surface-900 dark:text-white">LinkedIn Profile</p>
-                        <p className="text-sm text-surface-500 dark:text-surface-400">Share profile URL</p>
+                        <Link2 className="w-6 sm:w-8 h-6 sm:h-8 mx-auto mb-1.5 text-emerald-600" />
+                        <p className="font-medium text-sm sm:text-base text-surface-900 dark:text-white">LinkedIn Profile</p>
+                        <p className="text-xs sm:text-sm text-surface-500 dark:text-surface-400">Share profile URL</p>
                       </button>
                       <button onClick={() => setUploadMethod('profile')}
-                        className={`flex-1 p-4 rounded-xl border-2 transition-all ${
+                        className={`flex-1 p-3 sm:p-4 rounded-xl border-2 transition-all ${
                           uploadMethod === 'profile'
                             ? 'border-emerald-500/50 bg-emerald-50 dark:bg-emerald-900/20 shadow-sm'
                             : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
                         }`}>
-                        <User className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
-                        <p className="font-medium text-surface-900 dark:text-white">My Profile</p>
-                        <p className="text-sm text-surface-500 dark:text-surface-400">Use saved info from onboarding</p>
+                        <User className="w-6 sm:w-8 h-6 sm:h-8 mx-auto mb-1.5 text-emerald-600" />
+                        <p className="font-medium text-sm sm:text-base text-surface-900 dark:text-white">My Profile</p>
+                        <p className="text-xs sm:text-sm text-surface-500 dark:text-surface-400">Use saved info from onboarding</p>
                       </button>
                     </div>
                     {uploadMethod === 'file' ? (
@@ -435,14 +456,14 @@ const SkillAuditPage = () => {
 
                 {analyses.length > 0 && (
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-8">
-                    <Card>
-                      <CardHeader><CardTitle>Past Analyses ({analyses.length})</CardTitle></CardHeader>
+                      <Card className="overflow-hidden">
+                        <CardHeader><CardTitle>Past Analyses ({analyses.length})</CardTitle></CardHeader>
                       <CardContent>
                         <div className="space-y-3">
                           {analyses.map((a) => (
-                            <div key={a._id} className="flex items-center justify-between p-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-all">
-                              <div className="flex items-center space-x-3 min-w-0">
-                                <Clock size={18} className="text-surface-400 shrink-0" />
+                            <div key={a._id} className="flex items-center justify-between p-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-all gap-2">
+                              <div className="flex items-center space-x-3 min-w-0 flex-1">
+                                <Clock size={18} className="text-surface-400 shrink-0 hidden sm:block" />
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium text-surface-900 dark:text-white truncate">
                                     {a.fileName || 'Resume upload'} — {a.extracted?.skills?.length || 0} skills
@@ -450,7 +471,7 @@ const SkillAuditPage = () => {
                                   <p className="text-xs text-surface-500">{formatDate(a.createdAt)}</p>
                                 </div>
                               </div>
-                              <div className="flex items-center space-x-2 shrink-0">
+                              <div className="flex items-center gap-1 shrink-0">
                                 <button onClick={() => viewAnalysis(a)} className="p-1.5 hover:bg-surface-200 dark:hover:bg-surface-700 rounded-lg transition-colors" title="View">
                                   <Eye size={16} className="text-surface-500" />
                                 </button>
@@ -536,9 +557,9 @@ const SkillAuditPage = () => {
                           onChange={(e) => setEditData({ ...editData, tools: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
                           className="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-800 text-surface-900 dark:text-white" />
                       </div>
-                      <div className="flex space-x-3">
-                        <Button onClick={saveEdit}><Save size={16} className="mr-2" /> Save Changes</Button>
-                        <Button variant="secondary" onClick={cancelEdit}><X size={16} className="mr-2" /> Cancel</Button>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button onClick={saveEdit} className="w-full sm:w-auto"><Save size={16} className="mr-2" /> Save Changes</Button>
+                        <Button variant="secondary" onClick={cancelEdit} className="w-full sm:w-auto"><X size={16} className="mr-2" /> Cancel</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -552,23 +573,25 @@ const SkillAuditPage = () => {
                     <p className="text-surface-500 dark:text-surface-400 mb-6">
                       Based on your skill analysis, we can generate personalized career path recommendations and a custom learning roadmap.
                     </p>
-                    <div className="flex flex-wrap gap-3">
-                      <Button onClick={handleGenerateCareerPath}>
+                    <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                      <Button onClick={handleGenerateCareerPath} className="w-full sm:w-auto">
                         <Briefcase size={16} className="mr-2" /> Generate Career Path <ArrowRight size={16} className="ml-2" />
                       </Button>
-                      {currentAnalysisId && (
-                        <>
-                          <Button variant="secondary" onClick={() => startEdit({ _id: currentAnalysisId, extracted: parsedData.extracted })}>
-                            <Edit3 size={16} className="mr-2" /> Edit
-                          </Button>
-                          <Button variant="secondary" onClick={() => deleteAnalysis(currentAnalysisId)} className="text-red-600 border-red-300 hover:bg-red-50">
-                            <Trash2 size={16} className="mr-2" /> Delete
-                          </Button>
-                        </>
-                      )}
-                      <Button variant="secondary" onClick={() => { setStep(1); setEditingId(null); setEditData(null) }}>
-                        Upload Another Resume
-                      </Button>
+                      <div className="flex flex-wrap gap-3">
+                        {currentAnalysisId && (
+                          <>
+                            <Button variant="secondary" size="sm" onClick={() => startEdit({ _id: currentAnalysisId, extracted: parsedData.extracted })}>
+                              <Edit3 size={14} className="mr-1.5" /> Edit
+                            </Button>
+                            <Button variant="secondary" size="sm" onClick={() => deleteAnalysis(currentAnalysisId)} className="text-red-600 border-red-300 hover:bg-red-50">
+                              <Trash2 size={14} className="mr-1.5" /> Delete
+                            </Button>
+                          </>
+                        )}
+                        <Button variant="secondary" size="sm" onClick={() => { setStep(1); setEditingId(null); setEditData(null) }}>
+                          Upload Another Resume
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -22,7 +22,6 @@ import {
 import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
 import Sidebar from '@/components/dashboard/Sidebar'
-import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Progress from '@/components/ui/Progress'
@@ -333,9 +332,7 @@ const ProjectsPage = () => {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <DashboardHeader />
-        
-        <main className="flex-1 overflow-y-auto p-2">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pt-16 lg:pt-0">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <motion.div

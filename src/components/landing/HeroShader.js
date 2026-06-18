@@ -12,9 +12,15 @@ const HeroShader = () => {
     const ctx = canvas.getContext('2d')
     let animationId
     let w, h
+    let particles = []
+    let tier
 
-    const count = 100
-    const particles = []
+    const getTier = () => {
+      const w = window.innerWidth
+      if (w < 768) return 'mobile'
+      if (w < 1024) return 'tablet'
+      return 'desktop'
+    }
 
     const resize = () => {
       w = canvas.parentElement.clientWidth
@@ -25,16 +31,34 @@ const HeroShader = () => {
 
     const init = () => {
       resize()
+      tier = getTier()
+      const isMobile = tier === 'mobile'
+      const isTablet = tier === 'tablet'
+      const count = isMobile ? 25 : isTablet ? 45 : 100
+      particles = []
+      const maxSize = isMobile ? 2 : isTablet ? 2.5 : 4
+      const baseSize = isMobile ? 0.5 : isTablet ? 1 : 2
+      const speed = isMobile ? 0.15 : isTablet ? 0.25 : 0.4
       for (let i = 0; i < count; i++) {
         particles.push({
           x: Math.random() * w,
           y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
-          size: 2 + Math.random() * 4,
+          vx: (Math.random() - 0.5) * speed,
+          vy: (Math.random() - 0.5) * speed,
+          size: baseSize + Math.random() * maxSize,
           phase: Math.random() * Math.PI * 2,
         })
       }
+    }
+
+    let resizeTimer
+    const handleResize = () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        resize()
+        const newTier = getTier()
+        if (newTier !== tier) init()
+      }, 200)
     }
 
     const mouse = { x: -9999, y: -9999 }
@@ -46,10 +70,6 @@ const HeroShader = () => {
       target.y = e.clientY - rect.top
     }
 
-    const handleResize = () => {
-      resize()
-    }
-
     window.addEventListener('mousemove', handleMouse)
     window.addEventListener('resize', handleResize)
 
@@ -57,7 +77,7 @@ const HeroShader = () => {
 
     const getColor = () => {
       const isDark = document.documentElement.classList.contains('dark')
-      return isDark ? [0, 170, 110] : [0, 105, 72]
+      return isDark ? [0, 220, 140] : [0, 105, 72]
     }
 
     const animate = () => {
@@ -70,6 +90,8 @@ const HeroShader = () => {
       ctx.clearRect(0, 0, w, h)
 
       const [r, g, b] = getColor()
+
+      const isDark = document.documentElement.classList.contains('dark')
 
       for (const p of particles) {
         const drift = Math.sin(time * 0.5 + p.phase) * 0.3
@@ -92,13 +114,16 @@ const HeroShader = () => {
         if (p.y < 0) p.y += h
         if (p.y > h) p.y -= h
 
-        const alpha = 0.3 + Math.sin(time * 0.3 + p.phase) * 0.15
-        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.5)
+        const alpha = isDark
+          ? 0.6 + Math.sin(time * 0.3 + p.phase) * 0.2
+          : 0.3 + Math.sin(time * 0.3 + p.phase) * 0.15
+        const glowRadius = isDark ? p.size * 4 : p.size * 2.5
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowRadius)
         gradient.addColorStop(0, `rgba(${r},${g},${b},${alpha})`)
         gradient.addColorStop(1, `rgba(${r},${g},${b},0)`)
         ctx.fillStyle = gradient
         ctx.beginPath()
-        ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2)
+        ctx.arc(p.x, p.y, glowRadius, 0, Math.PI * 2)
         ctx.fill()
       }
     }

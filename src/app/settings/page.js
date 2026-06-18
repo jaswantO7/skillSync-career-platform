@@ -26,12 +26,12 @@ import {
   Image,
   Code,
   Plus,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/dashboard/Sidebar'
-import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -92,6 +92,7 @@ const SettingsPage = () => {
 
   const [selectedAvatar, setSelectedAvatar] = useState(userProfile?.profile?.avatar || 'sunset')
   const [selectedBanner, setSelectedBanner] = useState(userProfile?.profile?.banner || 'corporate')
+  const [showProfileCustomization, setShowProfileCustomization] = useState(false)
   const [notifications, setNotifications] = useState({
     weeklyProgress: true,
     achievementAlerts: true,
@@ -213,8 +214,7 @@ const SettingsPage = () => {
     <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-surface-900 dark:via-surface-900 dark:to-indigo-950">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <DashboardHeader />
-        <main className="flex-1 overflow-y-auto p-2">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pt-16 lg:pt-0">
           <div className="max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {/* Profile Header Card */}
@@ -252,55 +252,62 @@ const SettingsPage = () => {
             {/* Avatar & Banner Presets */}
             <Card className="mb-8">
               <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setShowProfileCustomization(prev => !prev)}
+                  className="flex items-center space-x-3 w-full text-left md:cursor-default"
+                >
+                  <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl shrink-0">
                     <Camera className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <CardTitle>Customize Your Profile</CardTitle>
                     <p className="text-sm text-surface-500 dark:text-surface-400 mt-0.5">
                       Choose an avatar and banner style
                     </p>
                   </div>
-                </div>
+                  <ChevronDown size={18} className={`text-surface-400 md:hidden transition-transform duration-200 ${showProfileCustomization ? 'rotate-180' : ''}`} />
+                </button>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Avatar Presets */}
-                <div>
-                  <h4 className="text-xs font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-wider mb-3">Avatar Style</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {avatarPresets.map(p => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setSelectedAvatar(p.id)}
-                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${p.bg} flex items-center justify-center ring-2 transition-all ${
-                          selectedAvatar === p.id ? 'ring-emerald-500 scale-110 shadow-lg' : 'ring-transparent hover:scale-110'
-                        }`}
-                      >
-                        <span className="text-white font-bold text-sm">{avatar.initials}</span>
-                      </button>
-                    ))}
+              <div className={`md:block ${showProfileCustomization ? 'block' : 'hidden'}`}>
+                <CardContent className="space-y-6">
+                  {/* Avatar Presets */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-wider mb-3">Avatar Style</h4>
+                    <div className="flex flex-wrap gap-3">
+                      {avatarPresets.map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setSelectedAvatar(p.id)}
+                          className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${p.bg} flex items-center justify-center ring-2 transition-all ${
+                            selectedAvatar === p.id ? 'ring-emerald-500 scale-110 shadow-lg' : 'ring-transparent hover:scale-110'
+                          }`}
+                        >
+                          <span className="text-white font-bold text-sm">{avatar.initials}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Banner Presets */}
-                <div>
-                  <h4 className="text-xs font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-wider mb-3">Banner Style</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {bannerPresets.map(p => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setSelectedBanner(p.id)}
-                        className={`h-10 w-28 sm:w-32 rounded-lg ${p.bg} ring-2 transition-all ${
-                          selectedBanner === p.id ? 'ring-emerald-500 scale-105 shadow-lg' : 'ring-transparent hover:scale-105'
-                        }`}
-                      />
-                    ))}
+                  {/* Banner Presets */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-wider mb-3">Banner Style</h4>
+                    <div className="flex flex-wrap gap-3">
+                      {bannerPresets.map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setSelectedBanner(p.id)}
+                          className={`h-10 w-28 sm:w-32 rounded-lg ${p.bg} ring-2 transition-all ${
+                            selectedBanner === p.id ? 'ring-emerald-500 scale-105 shadow-lg' : 'ring-transparent hover:scale-105'
+                          }`}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
+              </div>
             </Card>
 
             {/* Tabs */}
@@ -526,14 +533,16 @@ const SettingsPage = () => {
 
                         {/* Save Button */}
                         <div className="border-t border-surface-200 dark:border-surface-700 pt-6">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm text-surface-500 dark:text-surface-400">
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-sm text-surface-500 dark:text-surface-400 text-center sm:text-left">
                               Your changes will be saved to your profile
                             </p>
                             <Button
                               onClick={handleSaveProfile}
                               loading={saving}
+                              size="md"
                               icon={<Save size={16} />}
+                              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 border-0"
                             >
                               Save Changes
                             </Button>
@@ -689,20 +698,20 @@ const SettingsPage = () => {
                           loading={saving}
                           size="sm"
                           icon={<Save size={14} />}
+                          className="bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 border-0"
                         >
-                          Save Notification Settings
+                          Save
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Danger Zone */}
-                  <Card className="border-2 border-red-200 dark:border-red-900/50 overflow-hidden">
-                    <div className="h-1.5 bg-gradient-to-r from-red-500 to-red-600" />
+                  <Card className="border border-red-200/60 dark:border-red-900/30 overflow-hidden">
                     <CardHeader>
                       <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                        <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-xl">
+                          <AlertTriangle className="w-5 h-5 text-red-500" />
                         </div>
                         <div>
                           <CardTitle className="text-red-600 dark:text-red-400">Danger Zone</CardTitle>
@@ -713,9 +722,9 @@ const SettingsPage = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-xl">
-                        <div className="flex items-center space-x-4">
-                          <div className="p-2.5 glass-card rounded-xl shadow-sm">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-surface-50 dark:bg-surface-800/50 rounded-xl">
+                        <div className="flex items-start space-x-4">
+                          <div className="p-2.5 bg-white dark:bg-surface-700 rounded-xl shadow-sm shrink-0">
                             <Trash2 className="w-5 h-5 text-red-500" />
                           </div>
                           <div>
@@ -731,6 +740,7 @@ const SettingsPage = () => {
                             size="sm"
                             icon={<Trash2 size={14} />}
                             onClick={() => setShowDeleteConfirm(true)}
+                            className="w-full sm:w-auto"
                           >
                             Delete
                           </Button>
@@ -743,15 +753,15 @@ const SettingsPage = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800"
+                            className="mt-4 p-4 bg-surface-50 dark:bg-surface-800/50 rounded-xl border border-red-200/60 dark:border-red-900/30"
                           >
                             <div className="flex items-start space-x-3 mb-4">
                               <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
-                              <p className="text-sm text-red-700 dark:text-red-300">
-                                This will permanently delete your account and all associated data including your progress, roadmaps, and skill history. <strong>This action cannot be undone.</strong>
+                              <p className="text-sm text-surface-600 dark:text-surface-300">
+                                This will permanently delete your account and all associated data including your progress, roadmaps, and skill history. <strong className="text-red-600 dark:text-red-400">This action cannot be undone.</strong>
                               </p>
                             </div>
-                            <div className="flex space-x-3">
+                            <div className="flex flex-col sm:flex-row gap-3">
                               <Button
                                 variant="danger"
                                 size="sm"

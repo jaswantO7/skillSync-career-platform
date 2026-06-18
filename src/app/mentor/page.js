@@ -17,7 +17,6 @@ import {
 import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
 import Sidebar from '@/components/dashboard/Sidebar'
-import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -209,9 +208,7 @@ const MentorPage = () => {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <DashboardHeader />
-        
-        <main className="flex-1 flex overflow-hidden">
+        <main className="flex-1 flex overflow-hidden p-3 sm:p-4 pt-16 lg:pt-0">
           <div className="flex-1 flex flex-col">
             {userProfile?.subscriptionPlan === 'free' && (
               <div className="bg-gradient-to-r from-emerald-600 to-violet-600 px-4 py-3">

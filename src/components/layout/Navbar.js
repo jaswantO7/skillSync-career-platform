@@ -53,7 +53,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-white/[0.05] backdrop-blur-2xl border-b border-surface-200/10 dark:border-white/10 shadow-lg shadow-surface-900/10 dark:shadow-white/5 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-2">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2.5 group">
@@ -66,7 +66,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -79,7 +79,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-3">
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -149,7 +149,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className="lg:hidden flex items-center space-x-2">
             <button
               onClick={toggleTheme}
               className="w-9 h-9 rounded-lg flex items-center justify-center text-surface-500 dark:text-white/50 hover:text-surface-900 dark:hover:text-white hover:bg-surface-100 dark:hover:bg-white/10 transition-all"
@@ -170,7 +170,7 @@ const Navbar = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="md:hidden bg-white/70 dark:bg-white/[0.05] backdrop-blur-2xl border-t border-surface-200 dark:border-white/10"
+            className="lg:hidden bg-white/70 dark:bg-white/[0.05] backdrop-blur-2xl border-t border-surface-200 dark:border-white/10"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}

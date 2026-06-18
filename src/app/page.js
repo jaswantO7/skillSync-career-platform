@@ -20,28 +20,31 @@ const containerClass = 'max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8'
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-surface-950 text-surface-900 dark:text-surface-50 antialiased stitch-bg-soft">
+    <div className="min-h-screen bg-surface-50 dark:bg-surface-950 text-surface-900 dark:text-surface-50 antialiased stitch-bg-soft overflow-x-hidden">
       <Navbar />
 
       {/* ─── HERO ─── */}
-      <section className="relative min-h-[80vh] sm:min-h-screen flex items-center overflow-hidden bg-surface-55 dark:bg-surface-950">
+      <section className="relative min-h-dvh lg:min-h-screen flex items-center overflow-hidden bg-surface-55 dark:bg-surface-950 pt-16 lg:pt-0">
         <HeroShader />
         <div className={`${containerClass} grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 items-center w-full relative z-10`}>
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-5 sm:space-y-6 lg:space-y-8"
+            className="space-y-5 sm:space-y-6 lg:space-y-8 text-center lg:text-left"
           >
-            <motion.span
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-stitch-primary-container/10 border border-stitch-primary-container/20 rounded-full"
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/30 rounded-full mx-auto lg:mx-0"
             >
-              <Sparkles size={12} className="text-stitch-primary" />
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stitch-primary">AI-powered career platform</span>
-            </motion.span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">All services are online</span>
+            </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -57,7 +60,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
-              className="text-sm sm:text-base leading-relaxed text-surface-500 dark:text-surface-400 max-w-lg"
+              className="text-sm sm:text-base leading-relaxed text-surface-500 dark:text-surface-400 max-w-lg mx-auto lg:mx-0"
             >
               Transform your professional journey with AI-powered skill analysis, personalized learning roadmaps, and intelligent career guidance.
             </motion.p>
@@ -66,22 +69,22 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35 }}
-              className="flex flex-wrap gap-3 sm:gap-4"
+              className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start"
             >
               <Link href="/skill-audit">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center gap-2 bg-stitch-primary text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-full font-display text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="inline-flex items-center gap-2 bg-stitch-primary text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-display text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   Get Free Skill Audit
-                  <ArrowRight size={14} />
+                  <ArrowRight size={16} />
                 </motion.button>
               </Link>
               <Link href="#how-it-works">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
-                  className="inline-flex items-center border border-surface-300 dark:border-surface-600 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full font-display text-xs sm:text-sm font-semibold text-surface-900 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800/50 transition-all duration-300"
+                  className="inline-flex items-center border border-surface-300 dark:border-surface-600 px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-display text-sm sm:text-base font-semibold text-surface-900 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800/50 transition-all duration-300"
                 >
                   See how it works
                 </motion.button>
@@ -92,7 +95,7 @@ const LandingPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.45 }}
-              className="flex gap-4 sm:gap-8 lg:gap-12 pt-5 sm:pt-6 lg:pt-8 border-t border-surface-200 dark:border-surface-700"
+              className="flex gap-4 sm:gap-8 lg:gap-12 pt-5 sm:pt-6 lg:pt-8 border-t border-surface-200 dark:border-surface-700 justify-center lg:justify-start"
             >
               {[
                 ['10k+', 'Active users'],
@@ -184,12 +187,11 @@ const LandingPage = () => {
       </section>
 
       {/* ─── FEATURES (Bento Grid) ─── */}
-      <section id="features" className="py-16 sm:py-20 lg:py-[120px] bg-surface-55 dark:bg-surface-900">
+      <section id="features" className="py-16 sm:py-20 lg:py-[120px] bg-white dark:bg-surface-900">
         <div className={`${containerClass}`}>
           <motion.div {...fadeUp()} className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 lg:mb-20 space-y-4">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-stitch-secondary-container/10 border border-stitch-secondary-container/20 rounded-full">
-              <Sparkles size={12} className="text-stitch-secondary" />
-              <span className="text-xs font-bold uppercase tracking-wider text-stitch-secondary">Core features</span>
+            <span className="font-mono text-xs font-semibold tracking-[0.15em] text-stitch-secondary dark:text-stitch-secondary-fixed">
+              [ 02 ] CAPABILITIES
             </span>
             <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Everything you need to grow</h2>
             <p className="text-sm sm:text-base text-surface-500 dark:text-surface-400">AI-driven tools that analyze, plan, teach, and mentor — all in one place.</p>
@@ -204,7 +206,7 @@ const LandingPage = () => {
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               className="lg:col-span-7 group"
             >
-              <div className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-5 h-full border-t-4 border-t-stitch-primary dark:border-t-stitch-primary flex flex-col justify-between shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 transition-all hover:translate-y-[-8px] hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]">
+              <div className="bg-white dark:bg-white/[0.06] backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-5 h-full border-t-4 border-t-stitch-primary dark:border-t-stitch-primary flex flex-col justify-between shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-surface-200 dark:border-white/15 transition-all hover:translate-y-[-8px] hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]">
                 <div className="space-y-3">
                   <div className="w-8 sm:w-10 h-8 sm:h-10 bg-stitch-primary/10 dark:bg-stitch-primary/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center">
                     <Brain size={20} className="text-stitch-primary dark:text-stitch-primary-fixed" />
@@ -250,7 +252,7 @@ const LandingPage = () => {
                 transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="group flex-1"
               >
-                <div className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl rounded-3xl p-5 h-full border-t-4 border-t-stitch-secondary dark:border-t-stitch-secondary flex flex-col shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 transition-all hover:translate-y-[-8px] hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]">
+                <div className="bg-white dark:bg-white/[0.06] backdrop-blur-xl rounded-3xl p-5 h-full border-t-4 border-t-stitch-secondary dark:border-t-stitch-secondary flex flex-col shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-surface-200 dark:border-white/15 transition-all hover:translate-y-[-8px] hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]">
                   <div className="w-10 h-10 bg-stitch-secondary/10 dark:bg-stitch-secondary/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-3">
                     <Route size={20} className="text-stitch-secondary dark:text-stitch-secondary-fixed" />
                   </div>
@@ -278,7 +280,7 @@ const LandingPage = () => {
                 transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                 className="group flex-1"
               >
-                <div className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl rounded-3xl p-5 border-t-4 border-t-stitch-secondary dark:border-t-stitch-secondary shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 transition-all hover:translate-y-[-8px] hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]">
+                <div className="bg-white dark:bg-white/[0.06] backdrop-blur-xl rounded-3xl p-5 border-t-4 border-t-stitch-secondary dark:border-t-stitch-secondary shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-surface-200 dark:border-white/15 transition-all hover:translate-y-[-8px] hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]">
                   <div className="w-10 h-10 bg-stitch-secondary/10 dark:bg-stitch-secondary/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-3">
                     <Calendar size={20} className="text-stitch-secondary dark:text-stitch-secondary-fixed" />
                   </div>
@@ -305,10 +307,12 @@ const LandingPage = () => {
       </section>
 
       {/* ─── HOW IT WORKS ─── */}
-      <section id="how-it-works" className="py-16 sm:py-20 lg:py-[120px] bg-surface-55 dark:bg-surface-900">
+      <section id="how-it-works" className="py-16 sm:py-20 lg:py-[120px] bg-surface-55 dark:bg-surface-950">
         <div className={`${containerClass}`}>
           <motion.div {...fadeUp()} className="text-center mb-10 sm:mb-12 lg:mb-16 space-y-4">
-            <span className="text-xs font-bold uppercase tracking-[0.1em] text-stitch-primary">How it works</span>
+            <span className="font-mono text-xs font-semibold tracking-[0.15em] text-stitch-primary dark:text-stitch-primary-fixed">
+              [ 03 ] PROCESS
+            </span>
             <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Four steps to grow</h2>
             <p className="text-sm sm:text-base text-surface-500 dark:text-surface-400">From analysis to career advancement — we guide you every step.</p>
           </motion.div>
@@ -332,7 +336,7 @@ const LandingPage = () => {
                 <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto bg-white dark:bg-white/10 backdrop-blur-sm rounded-full border-2 border-stitch-primary flex items-center justify-center text-stitch-primary dark:text-stitch-primary-fixed font-bold text-base sm:text-lg md:text-xl shadow-lg transition-transform hover:scale-110">
                   {step.num}
                 </div>
-                <div className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 stitch-hover-float">
+                <div className="bg-white dark:bg-white/[0.06] backdrop-blur-xl p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-surface-200 dark:border-white/15 stitch-hover-float">
                   <step.icon size={28} className="text-stitch-primary dark:text-stitch-primary-fixed mx-auto mb-3" />
                   <h4 className="font-semibold text-surface-900 dark:text-white mb-2">{step.title}</h4>
                   <p className="text-sm text-surface-500 dark:text-white/60">{step.desc}</p>
@@ -344,22 +348,23 @@ const LandingPage = () => {
       </section>
 
       {/* ─── TESTIMONIALS ─── */}
-      <section className="py-16 sm:py-20 lg:py-[120px] bg-surface-55 dark:bg-surface-900">
+      <section className="py-16 sm:py-20 lg:py-[120px] bg-white dark:bg-surface-900">
         <div className={`${containerClass}`}>
-          <motion.div {...fadeUp()} className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 sm:mb-12 lg:mb-16 gap-4">
-            <div className="space-y-4">
-              <span className="text-xs font-bold uppercase tracking-[0.1em] text-stitch-secondary">Success stories</span>
-              <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Real people, real results</h2>
-            </div>
-            <div className="hidden md:flex gap-4">
-              <div className="w-12 h-12 rounded-full border border-surface-300 dark:border-surface-600 flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-stitch-primary hover:text-white transition-all duration-300 cursor-pointer">
-                <ChevronLeft size={20} />
-              </div>
-              <div className="w-12 h-12 rounded-full border border-surface-300 dark:border-surface-600 flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-stitch-primary hover:text-white transition-all duration-300 cursor-pointer">
-                <ChevronRight size={20} />
-              </div>
-            </div>
+          <motion.div {...fadeUp()} className="text-center mb-8 sm:mb-10 lg:mb-12 space-y-4">
+            <span className="font-mono text-xs font-semibold tracking-[0.15em] text-stitch-secondary dark:text-stitch-secondary-fixed">
+              [ 04 ] REAL RESULTS
+            </span>
+            <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-surface-900 dark:text-white">Real people, real results</h2>
           </motion.div>
+
+          <div className="hidden md:flex items-center justify-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-full border border-surface-300 dark:border-surface-600 flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-stitch-primary hover:text-white transition-all duration-300 cursor-pointer">
+              <ChevronLeft size={20} />
+            </div>
+            <div className="w-12 h-12 rounded-full border border-surface-300 dark:border-surface-600 flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-stitch-primary hover:text-white transition-all duration-300 cursor-pointer">
+              <ChevronRight size={20} />
+            </div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -373,7 +378,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-white/70 dark:bg-white/[0.06] backdrop-blur-xl p-5 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-white/30 dark:border-white/15 space-y-5 sm:space-y-6 lg:space-y-8 flex flex-col justify-between stitch-hover-float"
+                className="bg-white dark:bg-white/[0.06] backdrop-blur-xl p-5 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl shadow-[0_10px_20px_rgba(20,27,43,0.04)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.04)] border border-surface-200 dark:border-white/15 space-y-5 sm:space-y-6 lg:space-y-8 flex flex-col justify-between stitch-hover-float"
               >
                 <Quote size={24} className="text-surface-300 dark:text-white/30" />
                 <p className="text-base leading-relaxed italic text-surface-900 dark:text-white/80 flex-1">
@@ -401,12 +406,44 @@ const LandingPage = () => {
       <section id="pricing" className="py-16 sm:py-20 lg:py-[120px] bg-surface-900 dark:bg-surface-800 text-white rounded-t-[2rem] lg:rounded-t-[4rem]">
         <div className={`${containerClass}`}>
           <motion.div {...fadeUp()} className="text-center mb-10 sm:mb-12 lg:mb-20 space-y-4">
-            <span className="text-xs font-bold uppercase tracking-[0.1em] text-stitch-primary-fixed">Pricing</span>
+            <span className="font-mono text-xs font-semibold tracking-[0.15em] text-stitch-primary-fixed">
+              [ 05 ] PRICING
+            </span>
             <h2 className="font-display text-2xl sm:text-[28px] leading-[1.25] font-semibold text-white">Choose your plan</h2>
             <p className="text-sm sm:text-base text-[#dce2f7]">Start free, upgrade when you need more.</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 items-start">
+          {/* Mobile/tablet compact card */}
+          <div className="lg:hidden">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="bg-white/[0.06] backdrop-blur-xl rounded-2xl border border-white/10 p-6 text-center"
+            >
+              <div className="flex items-baseline justify-center gap-1 mb-2">
+                <span className="text-4xl font-bold">$29</span>
+                <span className="text-[#dce2f7] text-sm">/month</span>
+              </div>
+              <p className="text-sm text-[#dce2f7] mb-6">Full experience, no limits. Start free, upgrade when you need more.</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link href="/skill-audit">
+                  <button className="w-full sm:w-auto px-6 py-3 border border-white/20 rounded-xl text-sm font-semibold hover:bg-white hover:text-surface-900 transition-all">
+                    Start Free
+                  </button>
+                </Link>
+                <Link href="/plans">
+                  <button className="w-full sm:w-auto px-6 py-3 bg-stitch-primary rounded-xl text-sm font-semibold shadow-lg shadow-stitch-primary/20 transition-all">
+                    View All Plans
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Desktop full grid */}
+          <div className="hidden lg:grid lg:grid-cols-3 gap-8 items-start">
             {[
               {
                 name: 'Free', price: '$0', period: 'forever', desc: 'Core features to get started',
@@ -431,9 +468,9 @@ const LandingPage = () => {
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -8 }}
-                className={`relative rounded-2xl sm:rounded-[2rem] p-5 sm:p-6 lg:p-10 flex flex-col border transition-shadow duration-300 ${
+                className={`relative rounded-[2rem] p-10 flex flex-col border transition-shadow duration-300 ${
                   plan.popular
-                    ? 'bg-white/10 dark:bg-white/[0.06] backdrop-blur-xl border-2 border-stitch-primary md:scale-105 shadow-2xl dark:shadow-[0_0_40px_rgba(255,255,255,0.04)] z-10 hover:shadow-[0_20px_60px_rgba(0,105,72,0.3)] dark:hover:shadow-[0_20px_60px_rgba(0,170,110,0.15)]'
+                    ? 'bg-white/10 dark:bg-white/[0.06] backdrop-blur-xl border-2 border-stitch-primary scale-105 shadow-2xl dark:shadow-[0_0_40px_rgba(255,255,255,0.04)] z-10 hover:shadow-[0_20px_60px_rgba(0,105,72,0.3)] dark:hover:shadow-[0_20px_60px_rgba(0,170,110,0.15)]'
                     : 'bg-white/5 dark:bg-white/[0.04] backdrop-blur-xl border border-white/10 dark:border-white/10 hover:border-white/30 hover:shadow-2xl dark:hover:shadow-[0_20px_40px_rgba(255,255,255,0.07)]'
                 }`}
               >
@@ -497,9 +534,12 @@ const LandingPage = () => {
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="relative py-16 sm:py-20 lg:py-[120px] overflow-hidden bg-surface-55 dark:bg-surface-900">
+      <section className="relative py-16 sm:py-20 lg:py-[120px] overflow-hidden bg-surface-55 dark:bg-surface-950">
         <div className={`${containerClass} text-center relative z-10`}>
           <motion.div {...fadeUp()} className="max-w-3xl mx-auto space-y-5 sm:space-y-6 lg:space-y-8">
+            <span className="font-mono text-xs font-semibold tracking-[0.15em] text-stitch-primary dark:text-stitch-primary-fixed block">
+              [ 06 ] GET STARTED
+            </span>
             <h2 className="font-display text-2xl sm:text-3xl lg:text-[44px] leading-[1.15] font-bold tracking-tight text-surface-900 dark:text-white">
               Ready to transform your career?
             </h2>
@@ -523,15 +563,33 @@ const LandingPage = () => {
       </section>
 
       {/* ─── TRUSTED BY ─── */}
-      <section className="bg-surface-55 dark:bg-surface-900 border-t border-surface-200 dark:border-surface-700">
-        <div className={`${containerClass} py-12`}>
-          <p className="text-xs font-medium uppercase tracking-[0.15em] text-surface-400 dark:text-surface-500 text-center mb-6">
-            Trusted by professionals at
+      <section className="bg-white/70 dark:bg-white/[0.04] border-t border-surface-200 dark:border-white/10">
+        <div className={`${containerClass} py-14`}>
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-surface-400 dark:text-surface-500 text-center mb-8">
+            Powered by the infrastructure of the modern web
           </p>
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-3">
-            {['Google', 'Microsoft', 'Amazon', 'Meta', 'Apple', 'Netflix', 'Spotify', 'Adobe'].map((name) => (
-              <span key={name} className="font-display text-base font-medium text-surface-500 dark:text-surface-400">
-                {name}
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              { name: 'OpenAI', slug: 'openai', color: '#10a37f' },
+              { name: 'Vercel', slug: 'vercel', color: '#000' },
+              { name: 'Firebase', slug: 'firebase', color: '#ffca28' },
+              { name: 'Stripe', slug: 'stripe', color: '#635bff' },
+              { name: 'MongoDB', slug: 'mongodb', color: '#47a248' },
+              { name: 'GitHub', slug: 'github', color: '#181717' },
+              { name: 'React', slug: 'react', color: '#61dafb' },
+              { name: 'Next.js', slug: 'nextdotjs', color: '#000' },
+            ].map((tech) => (
+              <span
+                key={tech.name}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-white/[0.06] backdrop-blur-sm rounded-lg border border-surface-200 dark:border-white/10 text-sm font-medium text-surface-600 dark:text-surface-400 transition-colors hover:bg-surface-100 dark:hover:bg-white/[0.10]"
+              >
+                <img
+                  src={`https://cdn.simpleicons.org/${tech.slug}/${tech.color.replace('#', '')}`}
+                  alt={tech.name}
+                  className="h-4 w-4 shrink-0"
+                  loading="lazy"
+                />
+                {tech.name}
               </span>
             ))}
           </div>

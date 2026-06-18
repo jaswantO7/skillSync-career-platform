@@ -17,7 +17,6 @@ import { useAuth } from '@/context/AuthContext'
 import { useProgress } from '@/context/ProgressContext'
 import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/dashboard/Sidebar'
-import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import ProgressCard from '@/components/dashboard/ProgressCard'
 import CareerSummary from '@/components/dashboard/CareerSummary'
 import UsageBar from '@/components/plans/UsageBar'
@@ -102,9 +101,7 @@ const Dashboard = () => {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <DashboardHeader />
-        
-        <main className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pt-16 lg:pt-0">
           <div className="max-w-7xl mx-auto space-y-4 lg:space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

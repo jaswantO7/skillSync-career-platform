@@ -100,15 +100,15 @@ const FileUploader = ({ onFileUpload }) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-surface-200 dark:border-surface-700 rounded-xl p-4"
+          className="border border-surface-200 dark:border-surface-700 rounded-xl p-4 overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center shrink-0">
                 <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div>
-                <p className="font-medium text-surface-900 dark:text-white">
+              <div className="min-w-0">
+                <p className="font-medium text-surface-900 dark:text-white truncate">
                   {uploadedFile.name}
                 </p>
                 <p className="text-sm text-surface-500 dark:text-surface-400">
@@ -119,7 +119,7 @@ const FileUploader = ({ onFileUpload }) => {
             
             <button
               onClick={removeFile}
-              className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded transition-colors"
+              className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded transition-colors shrink-0"
             >
               <X size={20} className="text-surface-500" />
             </button>
